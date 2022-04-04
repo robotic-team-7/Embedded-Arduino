@@ -100,18 +100,18 @@ void setup() {
 
        //Notify Raspberry Pi that Ultrasonic sensor has observed an obsticle 
        Serial.write("hit");
-       _delay(1); //Might not needed
+       _delay(2); //Might not needed
        //Await response from Raspberry Pi that picture is captured
         while(1){
-          if(Serial.available() == 4){
+          if(Serial.available() >= 4){
             int availableSerial = Serial.available();
             char buff[availableSerial];
             Serial.readString().toCharArray(buff, availableSerial + 1);
-
             if(strcmp(buff, "done") == 0){
               break;
             }
           }
+          delay(50);
         }
         
         //Move backwards in 0.5 seconds, 50% of maximum speed
