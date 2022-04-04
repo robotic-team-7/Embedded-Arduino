@@ -11,8 +11,6 @@ MeEncoderOnBoard Encoder_2(SLOT2);
 MeRGBLed rgbled_0(0, 12);
 MeLineFollower linefollower_9(9);
 
-char* readSerialBuffer(int bufferAvailableSize);
-
 //Adjust brightness of LED-ring. 0.0 = minimum brightness, 1.0 = maximum brightness
 float led_brightness = 0.1;
 
@@ -65,13 +63,6 @@ void _delay(float seconds) {
   }
   long endTime = millis() + seconds * 1000;
   while(millis() < endTime) _loop();
-}
-
-void clearSerialBuffer(){
-  while(Serial.available() > 0){
-    char t = Serial.read();
-    //Serial.print(t); 
-  }
 }
 
 void setup() {
