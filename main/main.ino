@@ -11,6 +11,8 @@ MeEncoderOnBoard Encoder_2(SLOT2);
 MeRGBLed rgbled_0(0, 12);
 MeLineFollower linefollower_9(9);
 
+char* readSerialBuffer(int bufferAvailableSize);
+
 //Adjust brightness of LED-ring. 0.0 = minimum brightness, 1.0 = maximum brightness
 float led_brightness = 0.1;
 
@@ -65,6 +67,13 @@ void _delay(float seconds) {
   while(millis() < endTime) _loop();
 }
 
+void clearSerialBuffer(){
+  while(Serial.available() > 0){
+    char t = Serial.read();
+    //Serial.print(t); 
+  }
+}
+
 void setup() {
   Serial.begin(9600);
   
@@ -94,8 +103,12 @@ void setup() {
        _delay(1); //Might not needed
        //Await response from Raspberry Pi that picture is captured
         while(1){
-          if(Serial.available() > 0){
-            if(strcmp(Serial.read(), "done")){
+          if(Serial.available() == 4){
+            int availableSerial = Serial.available();
+            char buff[availableSerial];
+            Serial.readString().toCharArray(buff, availableSerial + 1);
+
+            if(strcmp(buff, "done") == 0){
               break;
             }
           }
