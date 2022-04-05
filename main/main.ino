@@ -3,7 +3,8 @@
 #include <Wire.h>
 #include <SoftwareSerial.h>
 #include <MeAuriga.h>
-
+#include <stdlib.h>
+#include <time.h>
 MeLightSensor lightsensor_12(12);
 MeUltrasonicSensor ultrasonic_10(10);
 MeEncoderOnBoard Encoder_1(SLOT1);
@@ -88,8 +89,13 @@ void setup() {
         //Show blue color on LED-ring
         rgbled_0.setColor(0,ledBlue[0],ledBlue[1],ledBlue[2]);
         rgbled_0.show();
+        
+        //Move backwards in 0.5 seconds, 50% of maximum speed
+        move(2, 50 / 100.0 * 255);
+        _delay(0.5);
+        move(2, 0);
 
-       //Notify Raspberry Pi that Ultrasonic sensor has observed an obsticle 
+        //Notify Raspberry Pi that Ultrasonic sensor has observed an obsticle 
        Serial.write("hit");
        _delay(1); //Might not needed
        //Await response from Raspberry Pi that picture is captured
@@ -105,15 +111,10 @@ void setup() {
           }
         }
         
-        //Move backwards in 0.5 seconds, 50% of maximum speed
-        move(2, 50 / 100.0 * 255);
-        _delay(0.5);
-        move(2, 0);
-
-        //Turn right in 1 second, 50% of maximum speed
-        move(4, 50 / 100.0 * 255);
+        int randomDirection = rand() % 2 + 3;
+        move(randomDirection, 50 / 100.0 * 255);
         _delay(1);
-        move(4, 0);
+        move(randomDirection, 0);
 
       }
       else if(linefollower_9.readSensors() == 0.000000){
@@ -130,11 +131,11 @@ void setup() {
         move(2, 50 / 100.0 * 255);
         _delay(0.5);
         move(2, 0);
-
-        //Turn right in right in 1 second, 50% of maximum speed
-        move(4, 50 / 100.0 * 255);
+        
+        int randomDirection = rand() % 2 + 3;
+        move(randomDirection, 50 / 100.0 * 255);
         _delay(1);
-        move(4, 0);
+        move(randomDirection, 0);
 
       }else{
         //Show green color on LED-ring
@@ -157,5 +158,6 @@ void _loop() {
 }
 
 void loop() {
+  srand(time(NULL));
   _loop();
 }
