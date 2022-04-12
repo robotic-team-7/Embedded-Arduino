@@ -1,13 +1,16 @@
-#ifndef POSITIONING.H
-#define POSITIONING.H
+#ifndef POSITIONING
+#define POSITIONING
 
 #include <MeEncoderOnBoard.h>
 #include <math.h>
+
+
 
 typedef struct coordinate{
     float x;
     float y;
 }Coordinate;
+
 
 /*
 *Used to initiate positioning module
@@ -63,5 +66,9 @@ double degrees_to_radians(float angle_in_degrees);
 *Returns distance traveled during given time duration in unit cm/sec
 */
 float get_distance_traveled(float speed_cm_per_sec, float time_in_seconds);
+
+float getCoordinateX();
+
+float getCoordinateY();
 
 #endif

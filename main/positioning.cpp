@@ -1,6 +1,6 @@
 #include "positioning.h"
 
-#define WHEEL_CIRCUMFERENCE_IN_CM 16.6
+#define WHEEL_CIRCUMFERENCE_IN_CM 16
 #define SECONDS_IN_MINUTE 60
 
 Coordinate current_position;
@@ -30,4 +30,12 @@ float get_time_passed(unsigned long timestamp_in_ms){
 void update_coordinates(float distance_traveled_cm, double angle_in_radians){
     current_position.x = current_position.x + distance_traveled_cm * cos(angle_in_radians);
     current_position.y = current_position.y + distance_traveled_cm * sin(angle_in_radians);
+}
+
+float getCoordinateX(){
+  return current_position.x;
+}
+
+float getCoordinateY(){
+  return current_position.y;
 }

@@ -5,6 +5,7 @@
 #include <MeAuriga.h>
 #include <stdlib.h>
 #include <time.h>
+#include "positioning.h"
 MeLightSensor lightsensor_12(12);
 MeUltrasonicSensor ultrasonic_10(10);
 MeEncoderOnBoard Encoder_1(SLOT1);
@@ -90,10 +91,34 @@ void serialCheckState(){
   }
 }
 
+void debugTrackingPrint(unsigned long timestamp, float distance){
+    Serial.print("Timestamp: ");
+    Serial.print(get_time_passed(timestamp) / 1000);
+    Serial.print("\n");
+    Serial.print("Distance: ");
+    Serial.print(distance);
+    Serial.print("\n");
+    Serial.print(" RPM: ");
+    Serial.print(Encoder_1.getCurrentSpeed());
+    Serial.print("\n");
+    Serial.print("GYRO Z: ");
+    Serial.print(gyro.getAngle(3));
+    Serial.print("\n");
+    Serial.print( "X: ");
+    Serial.print(getCoordinateX());
+    Serial.print( "Y: ");
+    Serial.print(getCoordinateY());
+    Serial.print("\n");
+    Serial.print("\n");
+    Serial.print("\n");
+}
+
 void setup() {
   Serial.begin(9600);
 
   gyro.begin();
+  
+  init(&Encoder_1);
   
   randomSeed((unsigned long)(lightsensor_12.read() * 123456));
   TCCR1A = _BV(WGM10);
@@ -106,13 +131,49 @@ void setup() {
   rgbled_0.fillPixelsBak(0, 2, 1);
   
   while(1) {
-    serialCheckState();
-    if(mode == S_AUTO){
-      autoMode();
-    }
-    else if(mode == S_MANUAL){
-      manualMode();
-    }
+    
+//    serialCheckState();
+//    if(mode == S_AUTO){ 
+//      autoMode();
+//    }
+//    else if(mode == S_MANUAL){
+//      manualMode();
+//    }
+
+
+    
+    unsigned long timestamp = millis();
+    move(1, 50 / 100.0 * 255);
+    _delay(1);
+    float cmPerSecond = 20.0;
+    _delay(1);
+    move(2, 0);
+    float distance = get_distance_traveled(cmPerSecond, get_time_passed(timestamp) / 1000);
+    update_coordinates(distance, degrees_to_radians(gyro.getAngle(3)));
+    debugTrackingPrint(timestamp, distance);
+    _delay(1);
+
+
+    timestamp = millis();
+    move(4, 50 / 100.0 * 255);
+    _delay(1);
+    move(1, 0);
+    distance = get_distance_traveled(cmPerSecond, get_time_passed(timestamp) / 1000);
+    update_coordinates(distance, degrees_to_radians(gyro.getAngle(3)));
+    debugTrackingPrint(timestamp, distance);
+    _delay(1);
+
+
+
+    timestamp = millis();
+    move(1, 50/100.0 * 255);
+    _delay(1);
+    move(1, 0);
+    distance = get_distance_traveled(cmPerSecond, get_time_passed(timestamp) / 1000);
+    update_coordinates(distance, degrees_to_radians(gyro.getAngle(3)));
+    debugTrackingPrint(timestamp, distance);
+    _delay(1);
+    
     _loop();
   }
 }
