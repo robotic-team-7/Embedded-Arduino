@@ -92,6 +92,7 @@ void setup() {
   rgbled_0.fillPixelsBak(0, 2, 1);
   
   while(1) {
+<<<<<<< Updated upstream
       if(ultrasonic_10.distanceCm() < 20){
         //Set motor speed to 0 in 0.5 seconds
         Encoder_1.setTarPWM(0);
@@ -128,6 +129,143 @@ void setup() {
         _delay(1);
         move(4, 0);
 
+=======
+    
+    //serialCheckState();
+  //  if(mode == S_AUTO){ 
+      autoMode();
+   // }
+//    }
+//    else if(mode == S_MANUAL){
+//      manualMode();
+//    }
+
+
+    
+    unsigned long timestamp = millis();
+    move(1, 50 / 100.0 * 255);
+    _delay(1);
+    float cmPerSecond = 20.0;
+    _delay(1);
+    move(2, 0);
+    float distance = get_distance_traveled(cmPerSecond, get_time_passed(timestamp) / 1000);
+    update_coordinates(distance, degrees_to_radians(gyro.getAngle(3)));
+    debugTrackingPrint(timestamp, distance);
+    _delay(1);
+
+
+    timestamp = millis();
+    move(4, 50 / 100.0 * 255);
+    _delay(1);
+    move(1, 0);
+    distance = get_distance_traveled(cmPerSecond, get_time_passed(timestamp) / 1000);
+    update_coordinates(distance, degrees_to_radians(gyro.getAngle(3)));
+    debugTrackingPrint(timestamp, distance);
+    _delay(1);
+
+
+
+    timestamp = millis();
+    move(1, 50/100.0 * 255);
+    _delay(1);
+    move(1, 0);
+    distance = get_distance_traveled(cmPerSecond, get_time_passed(timestamp) / 1000);
+    update_coordinates(distance, degrees_to_radians(gyro.getAngle(3)));
+    debugTrackingPrint(timestamp, distance);
+    _delay(1);
+    
+    _loop();
+  }
+}
+
+void autoMode(){
+    while(1){
+      if(Serial.available() >= 3)
+      {
+        _delay(0.2);
+        //Wait for Raspberry Pi to notify that Lidar has observed an obstacle
+        int availableSerial = Serial.available();
+        char buff[availableSerial];
+        Serial.readString().toCharArray(buff, availableSerial +1);
+        //Serial.write(buff);
+        if(strcmp(buff, "lidarHit") == 0)
+        {
+          //Show blue color on LED-ring
+          rgbled_0.setColor(0,ledBlue[0],ledBlue[1],ledBlue[2]);
+          rgbled_0.show();
+          //Set motor speed to 0 in 0.5 seconds
+          Encoder_1.setTarPWM(0);
+          Encoder_2.setTarPWM(0);
+          Serial.write("stopped");
+          _delay(0.2);
+          while(1){
+            int availableSerial2 = Serial.available();
+            char buff2[availableSerial2];
+            Serial.readString().toCharArray(buff2, availableSerial2 +1);
+            if(strcmp(buff2, "done") == 0){
+              //Show green color on LED-ring
+              rgbled_0.setColor(0,ledGreen[0],ledGreen[1],ledGreen[2]);
+              rgbled_0.show();
+              break;
+            }
+          }
+          //Move backwards in 0.5 seconds, 50% of maximum speed
+          move(2, 50 / 100.0 * 255);
+          _delay(0.5);
+          move(2, 0);
+    
+          //Choose left or right randomly and turn in  1 second 50% of speed
+          int randomDirection = rand() % 2 + 3;
+          move(randomDirection, 50 / 100.0 * 255);
+          _delay(1);
+          move(randomDirection, 0);
+        }
+      }
+        else if(linefollower_9.readSensors() == 0.000000)
+        {
+          lineFollowerTriggered();
+        }
+        else
+        {
+          autoDriveForward();   
+        }
+      }
+    }
+
+void manualMode(){
+  
+}
+
+
+
+void ultrasonicTriggered(){
+  //Set motor speed to 0 in 0.5 seconds
+  Encoder_1.setTarPWM(0);
+  Encoder_2.setTarPWM(0);
+  _delay(0.5);
+  
+  //Show blue color on LED-ring
+  rgbled_0.setColor(0,ledBlue[0],ledBlue[1],ledBlue[2]);
+  rgbled_0.show();
+  
+  //Move backwards in 0.5 seconds, 50% of maximum speed
+  move(2, 50 / 100.0 * 255);
+  _delay(0.5);
+  move(2, 0);
+  
+  //Notify Raspberry Pi that Ultrasonic sensor has observed an obsticle 
+  Serial.write("hit");
+  _delay(1); //Might not needed
+  //Await response from Raspberry Pi that picture is captured
+  while(1){
+    if(Serial.available() == 4){
+      int availableSerial = Serial.available();
+      char buff[availableSerial];
+      Serial.readString().toCharArray(buff, availableSerial + 1);
+  
+      if(strcmp(buff, "done") == 0){
+        break;
+>>>>>>> Stashed changes
       }
       else if(linefollower_9.readSensors() == 0.000000){
         //Set motor speed to 0 in 0.5 seconds
