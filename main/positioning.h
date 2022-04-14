@@ -64,4 +64,8 @@ double degrees_to_radians(float angle_in_degrees);
 */
 float get_distance_traveled(float speed_cm_per_sec, float time_in_seconds);
 
+float getCoordinateX();
+
+float getCoordinateY();
+
 #endif
