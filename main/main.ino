@@ -7,7 +7,6 @@
 #include <time.h>
 #include "positioning.h"
 MeLightSensor lightsensor_12(12);
-MeUltrasonicSensor ultrasonic_10(10);
 MeEncoderOnBoard Encoder_1(SLOT1);
 MeEncoderOnBoard Encoder_2(SLOT2);
 MeRGBLed rgbled_0(0, 12);
@@ -28,6 +27,7 @@ typedef enum{
 } s_modes;
 
 s_modes mode = S_AUTO;
+String command;
 
 void isr_process_encoder1(void)
 {
@@ -37,6 +37,7 @@ void isr_process_encoder1(void)
     Encoder_1.pulsePosPlus();
   }
 }
+
 void isr_process_encoder2(void)
 {
   if(digitalRead(Encoder_2.getPortB()) == 0){
@@ -45,10 +46,12 @@ void isr_process_encoder2(void)
     Encoder_2.pulsePosPlus();
   }
 }
+
 void move(int direction, int speed)
 {
   int leftSpeed = 0;
   int rightSpeed = 0;
+  
   if(direction == 1){ //Move forward
     leftSpeed = -speed;
     rightSpeed = speed;
@@ -62,6 +65,7 @@ void move(int direction, int speed)
     leftSpeed = speed;
     rightSpeed = speed;
   }
+  
   //Update motors speed
   Encoder_1.setTarPWM(leftSpeed);
   Encoder_2.setTarPWM(rightSpeed);
@@ -180,115 +184,92 @@ void setup() {
 
 void autoMode()
 {
-    while(1){
-      if(Serial.available() > 7)
-      {
-        _delay(0.2);
-        //Wait for Raspberry Pi to notify that Lidar has observed an obstacle
-        int availableSerial = Serial.available();
-        char buff[availableSerial];
-        Serial.readString().toCharArray(buff, availableSerial +1);
-        //_delay(0.1);
-        //flushSerial();
-
-        //Serial.write(buff);
-        if(strcmp(buff, "lidarHit") == 0)
-        {
-          //Show blue color on LED-ring
-          rgbled_0.setColor(0,ledBlue[0],ledBlue[1],ledBlue[2]);
-          rgbled_0.show();
-           //Move backwards in 0.5 seconds, 50% of maximum speed
-          move(2, 50 / 100.0 * 255);
-          _delay(0.5);
-          move(2, 0);
-
-          //Set motor speed to 0 in 0.5 seconds
-          Encoder_1.setTarPWM(0);
-          Encoder_2.setTarPWM(0);
-
-          Serial.write("stopped");
-          Serial.flush();
-          //_delay(0.2);
-          while(1){
-            if(Serial.available() > 3){
-              
-              int availableSerial2 = Serial.available();
-              //Serial.print(availableSerial2);
-              char buff2[availableSerial2];
-              Serial.readString().toCharArray(buff2, availableSerial2 +1);
-              Serial.print("Message:");
-              Serial.flush();
-              //_delay(0.1);
-              //flushSerial();
-              Serial.print(String(buff2));
-              Serial.flush();
-              if(strcmp(buff2, "done") == 0){
-                //Show green color on LED-ring
-                rgbled_0.setColor(0,ledGreen[0],ledGreen[1],ledGreen[2]);
-                rgbled_0.show();
-                break;
-              }
-            }
+  if(Serial.available())
+  {
+    command = Serial.readStringUntil('\n');
+    command.trim();
+   
+    if(command.equals("lidarHit"))
+    {
+      //Show blue color on LED-ring
+      rgbled_0.setColor(0,ledBlue[0],ledBlue[1],ledBlue[2]);
+      rgbled_0.show();
+      
+      //Move backwards in 0.5 seconds, 50% of maximum speed
+      move(2, 50 / 100.0 * 255);
+      _delay(0.5);
+      move(2, 0);
+  
+      //Set motor speed to 0 in 0.5 seconds
+      Encoder_1.setTarPWM(0);
+      Encoder_2.setTarPWM(0);
+  
+      //Sending message that we have stopped
+      Serial.print("stopped");
+      Serial.flush();
+      
+      while(1){
+        if(Serial.available()){
+          
+          command = Serial.readStringUntil('\n');
+          command.trim();
+          
+          if(command.equals("done")){
+            Serial.print("done");
+            Serial.flush();
+            
+            //Show green color on LED-ring
+            rgbled_0.setColor(0,ledGreen[0],ledGreen[1],ledGreen[2]);
+            rgbled_0.show();
+            
+            break;
           }
-
-          //Choose left or right randomly and turn in  1 second 50% of speed
-          int randomDirection = rand() % 2 + 3;
-          move(randomDirection, 50 / 100.0 * 255);
-          _delay(1);
-          move(randomDirection, 0);
         }
       }
-        else if(linefollower_9.readSensors() == 0.000000)
-        {
-          lineFollowerTriggered();
-        }
-        else
-        {
-          autoDriveForward();
-        }
-      }
-}
-
-void manualMode(){
   
-}
-
-void ultrasonicTriggered(){
-  //Set motor speed to 0 in 0.5 seconds
-  Encoder_1.setTarPWM(0);
-  Encoder_2.setTarPWM(0);
-  _delay(0.5);
-  
-  //Show blue color on LED-ring
-  rgbled_0.setColor(0,ledBlue[0],ledBlue[1],ledBlue[2]);
-  rgbled_0.show();
-  
-  //Move backwards in 0.5 seconds, 50% of maximum speed
-  move(2, 50 / 100.0 * 255);
-  _delay(0.5);
-  move(2, 0);
-  
-  //Notify Raspberry Pi that Ultrasonic sensor has observed an obsticle 
-  Serial.write("hit");
-  _delay(1); //Might not needed
-  //Await response from Raspberry Pi that picture is captured
-  while(1){
-    if(Serial.available() == 4){
-      int availableSerial = Serial.available();
-      char buff[availableSerial];
-      Serial.readString().toCharArray(buff, availableSerial + 1);
-  
-      if(strcmp(buff, "done") == 0){
-        break;
-      }
+      //Choose left or right randomly and turn in  1 second 50% of speed
+      int randomDirection = rand() % 2 + 3;
+      move(randomDirection, 50 / 100.0 * 255);
+      _delay(1);
+      move(randomDirection, 0);
     }
   }
   
-  //Choose left or right randomly and turn in  1 second 50% of speed
-  int randomDirection = rand() % 2 + 3;
-  move(randomDirection, 50 / 100.0 * 255);
-  _delay(1);
-  move(randomDirection, 0);
+  else if(linefollower_9.readSensors() == 0.000000)
+  {
+    lineFollowerTriggered();
+  }
+  
+  else
+  {
+    autoDriveForward();
+  }    
+}
+
+
+void manualMode(){
+  if(Serial.available())
+  {
+    command = Serial.readStringUntil('\n');
+    command.trim();
+
+    if(command.equals("Forward"))
+    {
+      move(1, (50 / 100.0 * 255));
+    }
+    else if(command.equals("Right"))
+    {
+      move(4, (50 / 100.0 * 255));
+    }
+    else if(command.equals("Left"))
+    {
+      move(3, (50 / 100.0 * 255));
+    }
+    else if(command.equals("Reverse"))
+    {
+      move(2, (50 / 100.0 * 255));
+    }
+  }
 }
 
 void lineFollowerTriggered(){
