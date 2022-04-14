@@ -2,6 +2,7 @@
 #define POSITIONING
 
 #include <MeEncoderOnBoard.h>
+#include <MeGyro.h>
 #include <math.h>
 
 
@@ -17,7 +18,7 @@ typedef struct coordinate{
 *Takes a MeEncoderOnBoard reference
 *Returns nothing
 */
-void init(MeEncoderOnBoard* encoder);
+void init(MeEncoderOnBoard* encoder, MeGyro* gyro0);
 
 /*
 *Gets the current speed in cm per second
@@ -70,5 +71,12 @@ float get_distance_traveled(float speed_cm_per_sec, float time_in_seconds);
 float getCoordinateX();
 
 float getCoordinateY();
+
+void setTimestamp();
+
+void registerPositionChange(float speed_cm_per_sec);
+
+void printCoordinates();
+
 
 #endif
