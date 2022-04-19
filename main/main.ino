@@ -26,7 +26,17 @@ typedef enum {
   S_MANUAL
 } s_modes;
 
-s_modes mode = S_AUTO;
+s_modes mode = S_MANUAL;
+
+typedef enum {
+  M_FORWARD,
+  M_BACKWARDS,
+  M_LEFT,
+  M_RIGHT,
+  M_NONE
+} m_direction;
+
+m_direction manual_direction = M_NONE;
 
 bool autoModeStarted = false;
 
@@ -76,18 +86,47 @@ void _delay(float seconds) {
   while (millis() < endTime) _loop();
 }
 
-void serialCheckState() {
+void checkSerialInput() {
   if (Serial.available() > 0) {
     int availableSerial = Serial.available();
     char buff[availableSerial];
     Serial.readString().toCharArray(buff, availableSerial + 1);
 
+    Serial.print("Buffer contains:");
+    for(int i = 0; i < availableSerial + 1; i++){
+      Serial.print(buff[i]);
+    }
+    Serial.print("\n");
+
     if (strcmp(buff, "auto") == 0) {
+      Serial.print("Entered auto mode \n");
       mode = S_AUTO;
     }
     else if (strcmp(buff, "manual") == 0) {
+      Serial.print("Entered manual mode \n");
       mode = S_MANUAL;
     }
+    else if (mode == S_MANUAL){
+      if(strcmp(buff, "forward") == 0){
+        Serial.print("Recived forward \n");
+        manual_direction = M_FORWARD;
+      }
+      else if(strcmp(buff, "backwards") == 0){
+        Serial.print("Recived backwards \n");
+        manual_direction = M_BACKWARDS;
+      }
+      else if(strcmp(buff, "left") == 0){
+        Serial.print("Recived left \n");
+        manual_direction = M_LEFT;
+      }
+      else if(strcmp(buff, "right" )== 0){
+        Serial.print("Recived right \n");
+        manual_direction = M_RIGHT;
+      }
+    }
+  }
+  else if(mode == S_MANUAL){
+    manual_direction = M_NONE;
   }
 }
 
@@ -114,7 +153,7 @@ void debugTrackingPrint(unsigned long timestamp, float distance) {
 }
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   gyro.begin();
 
@@ -131,7 +170,7 @@ void setup() {
   rgbled_0.fillPixelsBak(0, 2, 1);
 
   while (1) {
-    //serialCheckState();
+    checkSerialInput();
     
     if (mode == S_AUTO) {
       autoMode();
@@ -159,7 +198,24 @@ void autoMode() {
 }
 
 void manualMode() {
-
+  switch(manual_direction){
+    case M_NONE:
+      move(1,0);
+      break;
+    case M_FORWARD:
+      move(1, 50 / 100.0 * 255);
+      break;
+    case M_BACKWARDS:
+      move(2, 50 / 100.0 * 255);
+      break;
+    case M_LEFT:
+      move(3, 50 / 100.0 * 255);
+      break;
+    case M_RIGHT:
+      move(4, 50 / 100.0 * 255);
+      break;
+  }
+  _delay(0.25);
 }
 
 void lineFollowerTriggered() {
