@@ -87,46 +87,37 @@ void _delay(float seconds) {
 }
 
 void checkSerialInput() {
-  if (Serial.available() > 0) {
+  if (Serial.available() > 1) {
     int availableSerial = Serial.available();
     char buff[availableSerial];
-    Serial.readString().toCharArray(buff, availableSerial + 1);
-
-    Serial.print("Buffer contains:");
+    
     for(int i = 0; i < availableSerial + 1; i++){
-      Serial.print(buff[i]);
+      buff[i] = Serial.read();
     }
-    Serial.print("\n");
 
-    if (strcmp(buff, "auto") == 0) {
-      Serial.print("Entered auto mode \n");
+    if (buff[0] == 'A' && buff[1] == 'M') {
       mode = S_AUTO;
     }
-    else if (strcmp(buff, "manual") == 0) {
-      Serial.print("Entered manual mode \n");
+    else if (buff[0] == 'M' && buff[1] == 'M') {
       mode = S_MANUAL;
     }
     else if (mode == S_MANUAL){
-      if(strcmp(buff, "forward") == 0){
-        Serial.print("Recived forward \n");
+      if(buff[0] == 'M' && buff[1] == 'F'){
         manual_direction = M_FORWARD;
       }
-      else if(strcmp(buff, "backwards") == 0){
-        Serial.print("Recived backwards \n");
+      else if(buff[0] == 'M' && buff[1] == 'B'){
         manual_direction = M_BACKWARDS;
       }
-      else if(strcmp(buff, "left") == 0){
-        Serial.print("Recived left \n");
+      else if(buff[0] == 'M' && buff[1] == 'L'){
         manual_direction = M_LEFT;
       }
-      else if(strcmp(buff, "right" )== 0){
-        Serial.print("Recived right \n");
+      else if(buff[0] == 'M' && buff[1] == 'R'){
         manual_direction = M_RIGHT;
       }
+      else if(buff[0] == 'M' && buff[1] == 'S'){
+        manual_direction = M_NONE;
+      }
     }
-  }
-  else if(mode == S_MANUAL){
-    manual_direction = M_NONE;
   }
 }
 
@@ -171,7 +162,7 @@ void setup() {
 
   while (1) {
     checkSerialInput();
-    
+
     if (mode == S_AUTO) {
       autoMode();
     }
@@ -215,7 +206,6 @@ void manualMode() {
       move(4, 50 / 100.0 * 255);
       break;
   }
-  _delay(0.25);
 }
 
 void lineFollowerTriggered() {
