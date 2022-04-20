@@ -20,14 +20,27 @@ float led_brightness = 0.1;
 int ledRed[3] = {(int)(255 * led_brightness), 0, 0};
 int ledGreen[3] = {0, (int)(255 * led_brightness), 0};
 int ledBlue[3] = {0, 0, (int)(255 * led_brightness)};
+int ledYellow[3] = {(int)(255*led_brightness), (int)(255 * led_brightness), 0};
 
 typedef enum{
   S_AUTO,
   S_MANUAL
 } s_modes;
 
-s_modes mode = S_AUTO;
+s_modes mode = S_MANUAL;
 String command;
+
+typedef enum {
+  M_FORWARD,
+  M_BACKWARDS,
+  M_LEFT,
+  M_RIGHT,
+  M_NONE
+} m_direction;
+
+m_direction manual_direction = M_NONE;
+
+bool autoModeStarted = false;
 
 void isr_process_encoder1(void)
 {
@@ -79,19 +92,34 @@ void _delay(float seconds) {
   while(millis() < endTime) _loop();
 }
 
-void serialCheckState(){
-  if(Serial.available() > 0){
-    int availableSerial = Serial.available();
-    char buff[availableSerial];
-    Serial.readString().toCharArray(buff, availableSerial + 1);
-  
-    if(strcmp(buff, "auto") == 0){
+void checkSerialInput() {
+  if (Serial.available()) {
+    command = Serial.readStringUntil("\n");
+    command.trim();
+
+    if (command.equals("AM")) {
       mode = S_AUTO;
     }
-    else if(strcmp(buff, "manual") == 0){
+    else if (command.equals("MM")) {
       mode = S_MANUAL;
     }
-    
+    else if (mode == S_MANUAL){
+      if(command.equals("MF")){
+        manual_direction = M_FORWARD;
+      }
+      else if(command.equals("MB")){
+        manual_direction = M_BACKWARDS;
+      }
+      else if(command.equals("ML")){
+        manual_direction = M_LEFT;
+      }
+      else if(command.equals("MR")){
+        manual_direction = M_RIGHT;
+      }
+      else if(command.equals("MS")){
+        manual_direction = M_NONE;
+      }
+    }
   }
 }
 
@@ -118,11 +146,11 @@ void debugTrackingPrint(unsigned long timestamp, float distance){
 }
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   gyro.begin();
   
-  init(&Encoder_1);
+  init(&Encoder_1, &gyro);
   
   randomSeed((unsigned long)(lightsensor_12.read() * 123456));
   TCCR1A = _BV(WGM10);
@@ -136,103 +164,43 @@ void setup() {
   
   while(1) {
     
-//    serialCheckState();
-//    if(mode == S_AUTO){ 
-    autoMode();
-//    }
-//    else if(mode == S_MANUAL){
-//      manualMode();
-//    }
-
-
-    
-    unsigned long timestamp = millis();
-    move(1, 50 / 100.0 * 255);
-    _delay(1);
-    float cmPerSecond = 20.0;
-    _delay(1);
-    move(2, 0);
-    float distance = get_distance_traveled(cmPerSecond, get_time_passed(timestamp) / 1000);
-    update_coordinates(distance, degrees_to_radians(gyro.getAngle(3)));
-    debugTrackingPrint(timestamp, distance);
-    _delay(1);
-
-
-    timestamp = millis();
-    move(4, 50 / 100.0 * 255);
-    _delay(1);
-    move(1, 0);
-    distance = get_distance_traveled(cmPerSecond, get_time_passed(timestamp) / 1000);
-    update_coordinates(distance, degrees_to_radians(gyro.getAngle(3)));
-    debugTrackingPrint(timestamp, distance);
-    _delay(1);
-
-
-
-    timestamp = millis();
-    move(1, 50/100.0 * 255);
-    _delay(1);
-    move(1, 0);
-    distance = get_distance_traveled(cmPerSecond, get_time_passed(timestamp) / 1000);
-    update_coordinates(distance, degrees_to_radians(gyro.getAngle(3)));
-    debugTrackingPrint(timestamp, distance);
-    _delay(1);
-    
+    checkSerialInput();
+    if(mode == S_AUTO){ 
+      autoMode();
+    }
+    else if(mode == S_MANUAL){
+      manualMode();
+    } 
     _loop();
   }
 }
 
 void autoMode()
 {
-  if(Serial.available())
+  if(autoModeStarted == false){
+    setTimestamp();
+    autoModeStarted = true;
+  }
+
+  if(command.equals("LT"))
   {
-    command = Serial.readStringUntil('\n');
-    command.trim();
-   
-    if(command.equals("lidarHit"))
-    {
-      //Show blue color on LED-ring
-      rgbled_0.setColor(0,ledBlue[0],ledBlue[1],ledBlue[2]);
-      rgbled_0.show();
-      
-      //Move backwards in 0.5 seconds, 50% of maximum speed
-      move(2, 50 / 100.0 * 255);
-      _delay(0.5);
-      move(2, 0);
-  
-      //Set motor speed to 0 in 0.5 seconds
-      Encoder_1.setTarPWM(0);
-      Encoder_2.setTarPWM(0);
-  
-      //Sending message that we have stopped
-      Serial.print("stopped");
-      Serial.flush();
-      
-      while(1){
-        if(Serial.available()){
-          
-          command = Serial.readStringUntil('\n');
-          command.trim();
-          
-          if(command.equals("done")){
-            Serial.print("done");
-            Serial.flush();
-            
-            //Show green color on LED-ring
-            rgbled_0.setColor(0,ledGreen[0],ledGreen[1],ledGreen[2]);
-            rgbled_0.show();
-            
-            break;
-          }
-        }
-      }
-  
-      //Choose left or right randomly and turn in  1 second 50% of speed
-      int randomDirection = rand() % 2 + 3;
-      move(randomDirection, 50 / 100.0 * 255);
-      _delay(1);
-      move(randomDirection, 0);
-    }
+    //Show blue color on LED-ring
+    rgbled_0.setColor(0,ledBlue[0],ledBlue[1],ledBlue[2]);
+    rgbled_0.show();
+    
+    //Move backwards in 0.5 seconds, 50% of maximum speed
+    move(2, 50 / 100.0 * 255);
+    _delay(0.5);
+    move(2, 0);
+
+    //Set motor speed to 0 in 0.5 seconds
+    Encoder_1.setTarPWM(0);
+    Encoder_2.setTarPWM(0);
+
+    //Sending message that we have stopped
+    Serial.print("LOK");
+    Serial.flush();
+    command = "";
   }
   
   else if(linefollower_9.readSensors() == 0.000000)
@@ -248,34 +216,32 @@ void autoMode()
 
 
 void manualMode(){
-  if(Serial.available())
-  {
-    command = Serial.readStringUntil('\n');
-    command.trim();
-
-    if(command.equals("Forward"))
-    {
-      move(1, (50 / 100.0 * 255));
+  rgbled_0.setColor(0,ledYellow[0],ledYellow[1],ledYellow[2]);
+  rgbled_0.show();
+  switch(manual_direction){
+      case M_NONE:
+        move(1,0);
+        break;
+      case M_FORWARD:
+        move(1, 50 / 100.0 * 255);
+        break;
+      case M_BACKWARDS:
+        move(2, 50 / 100.0 * 255);
+        break;
+      case M_LEFT:
+        move(3, 50 / 100.0 * 255);
+        break;
+      case M_RIGHT:
+        move(4, 50 / 100.0 * 255);
+        break;
     }
-    else if(command.equals("Right"))
-    {
-      move(4, (50 / 100.0 * 255));
-    }
-    else if(command.equals("Left"))
-    {
-      move(3, (50 / 100.0 * 255));
-    }
-    else if(command.equals("Reverse"))
-    {
-      move(2, (50 / 100.0 * 255));
-    }
-  }
 }
 
 void lineFollowerTriggered(){
   //Set motor speed to 0 in 0.5 seconds
   Encoder_1.setTarPWM(0);
   Encoder_2.setTarPWM(0);
+  registerPositionChange(20.0);
   _delay(0.5);
   
   //Show red color on LED-ring
@@ -283,8 +249,10 @@ void lineFollowerTriggered(){
   rgbled_0.show();
   
   //Go backwards in 0.5 seconds, 50% of maximum speed
+  setTimestamp();
   move(2, 50 / 100.0 * 255);
   _delay(0.5);
+  registerPositionChange(-1*20.0);
   move(2, 0);
   
   //Choose left or right randomly and turn in  1 second 50% of speed
@@ -292,6 +260,7 @@ void lineFollowerTriggered(){
   move(randomDirection, 50 / 100.0 * 255);
   _delay(1);
   move(randomDirection, 0);
+  setTimestamp();
 }
 
 void autoDriveForward(){
@@ -331,11 +300,4 @@ void _loop() {
 void loop() {
   srand(time(NULL));
   _loop();
-}
-
-
-void flushSerial(){
-  while (Serial.available() > 0){
-    char t = Serial.read();
-  }
 }
