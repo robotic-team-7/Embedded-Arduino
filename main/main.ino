@@ -93,30 +93,46 @@ void _delay(float seconds) {
 }
 
 void checkSerialInput() {
-  if (Serial.available()) {
-    command = Serial.readStringUntil("\n");
-    command.trim();
+  if (Serial.available() > 1) 
+  {
+    int availableSerial = Serial.available();
+    char buff[availableSerial];
+    
+    for(int i = 0; i < availableSerial + 1; i++)
+    {
+      buff[i] = Serial.read();
+    }
 
-    if (command.equals("AM")) {
+    command = String(buff);
+      
+    if (buff[0] == 'A' && buff[1] == 'M') 
+    {
       mode = S_AUTO;
     }
-    else if (command.equals("MM")) {
+    else if (buff[0] == 'M' && buff[1] == 'M')
+    {
       mode = S_MANUAL;
     }
-    else if (mode == S_MANUAL){
-      if(command.equals("MF")){
+    else if (mode == S_MANUAL)
+    {
+      if(buff[1] == 'F' && buff[0] == 'M')
+      {
         manual_direction = M_FORWARD;
       }
-      else if(command.equals("MB")){
+      else if(buff[1] == 'B' && buff[0] == 'M')
+      {
         manual_direction = M_BACKWARDS;
       }
-      else if(command.equals("ML")){
+      else if(buff[1] == 'L' && buff[0] == 'M')
+      {
         manual_direction = M_LEFT;
       }
-      else if(command.equals("MR")){
+      else if(buff[1] == 'R' && buff[0] == 'M')
+      {
         manual_direction = M_RIGHT;
       }
-      else if(command.equals("MS")){
+      else if(buff[1] == 'S' && buff[0] == 'M')
+      {
         manual_direction = M_NONE;
       }
     }
@@ -162,13 +178,15 @@ void setup() {
   rgbled_0.setpin(44);
   rgbled_0.fillPixelsBak(0, 2, 1);
   
-  while(1) {
-    
+  while(1)
+  {  
     checkSerialInput();
-    if(mode == S_AUTO){ 
+    if(mode == S_AUTO)
+    { 
       autoMode();
     }
-    else if(mode == S_MANUAL){
+    else if(mode == S_MANUAL)
+    {
       manualMode();
     } 
     _loop();
@@ -177,7 +195,8 @@ void setup() {
 
 void autoMode()
 {
-  if(autoModeStarted == false){
+  if(autoModeStarted == false)
+  {
     setTimestamp();
     autoModeStarted = true;
   }
@@ -199,7 +218,6 @@ void autoMode()
 
     //Sending message that we have stopped
     Serial.print("LOK");
-    Serial.flush();
     command = "";
   }
   
@@ -218,7 +236,8 @@ void autoMode()
 void manualMode(){
   rgbled_0.setColor(0,ledYellow[0],ledYellow[1],ledYellow[2]);
   rgbled_0.show();
-  switch(manual_direction){
+  switch(manual_direction)
+  {
       case M_NONE:
         move(1,0);
         break;
@@ -234,7 +253,7 @@ void manualMode(){
       case M_RIGHT:
         move(4, 50 / 100.0 * 255);
         break;
-    }
+  }
 }
 
 void lineFollowerTriggered(){
