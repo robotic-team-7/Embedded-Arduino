@@ -16,6 +16,9 @@ MeGyro gyro(0, 0x69);
 //Adjust brightness of LED-ring. 0.0 = minimum brightness, 1.0 = maximum brightness
 float led_brightness = 0.1;
 
+//global speed for manual
+int speedManual = 50;
+
 //Define standard colors and adjust brightness
 int ledRed[3] = {(int)(255 * led_brightness), 0, 0};
 int ledGreen[3] = {0, (int)(255 * led_brightness), 0};
@@ -134,6 +137,16 @@ void checkSerialInput() {
       {
         manual_direction = M_NONE;
       }
+      else if(buff[1] == 'I' && buff[0] == 'S')
+      {
+        if(speedManual != 100)
+          speedManual += 25;
+      }
+      else if(buff[1] == 'D' && buff[0] == 'S')
+      {
+        if(speedManual != 25)
+          speedManual -= 25;
+      }
     }
   }
 }
@@ -249,16 +262,16 @@ void manualMode(){
         move(1,0);
         break;
       case M_FORWARD:
-        move(1, 50 / 100.0 * 255);
+        move(1, speedManual / 100.0 * 255);
         break;
       case M_BACKWARDS:
-        move(2, 50 / 100.0 * 255);
+        move(2, speedManual / 100.0 * 255);
         break;
       case M_LEFT:
-        move(3, 50 / 100.0 * 255);
+        move(3, speedManual / 100.0 * 255);
         break;
       case M_RIGHT:
-        move(4, 50 / 100.0 * 255);
+        move(4, speedManual / 100.0 * 255);
         break;
   }
 }
@@ -295,7 +308,10 @@ void autoDriveForward(){
   rgbled_0.show();
   
   //Go forward, 50% of maximum speed
-  move(1, 50 / 100.0 * 255);
+  if(mode == S_MANUAL)
+    move(1, speedManual / 100.0 * 255);
+  else 
+    move(1, 50 / 100.0 * 255);
 }
 
 //For debug purpose
