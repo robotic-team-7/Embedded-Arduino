@@ -26,7 +26,7 @@ typedef enum {
   S_MANUAL
 } s_modes;
 
-s_modes mode = S_MANUAL;
+s_modes mode = S_AUTO;
 
 typedef enum {
   M_FORWARD,
@@ -39,6 +39,15 @@ typedef enum {
 m_direction manual_direction = M_NONE;
 
 bool autoModeStarted = false;
+
+typedef enum {
+  LTS_NOT_TRIGGERED,
+  LTS_STOPPING_ROBOT,
+  LTS_WAITING_ON_PIC_TAKEN,
+  LTS_TURNING_AWAY_FROM_OBSTACLE
+} s_lidar_triggered;
+
+s_lidar_triggered lidar_triggered_states = LTS_NOT_TRIGGERED;
 
 void isr_process_encoder1(void)
 {
@@ -118,6 +127,12 @@ void checkSerialInput() {
         manual_direction = M_NONE;
       }
     }
+    else if(buff[0] == 'L' && buff[1] == 'T'){ //When in Auto mode, LIDAR triggered command from Raspberry
+      lidar_triggered_states = LTS_STOPPING_ROBOT;
+    }
+    else if(lidar_triggered_states == LTS_WAITING_ON_PIC_TAKEN && buff[0] == 'P' && buff[1] == 'T'){
+      lidar_triggered_states = LTS_TURNING_AWAY_FROM_OBSTACLE;
+    }
   }
 }
 
@@ -183,12 +198,18 @@ void autoMode() {
   if (linefollower_9.readSensors() == 0.000000) {
     lineFollowerTriggered();
 
-  } else {
+  }
+  else if(lidar_triggered_states != LTS_NOT_TRIGGERED){
+     lidarTriggered();
+  }
+  else {
     autoDriveForward();
   }
 }
 
 void manualMode() {
+  rgbled_0.setColor(0, 0, 0, 0);
+  rgbled_0.show();
   switch(manual_direction){
     case M_NONE:
       move(1,0);
@@ -232,6 +253,43 @@ void lineFollowerTriggered() {
   _delay(1);
   move(randomDirection, 0);
   setTimestamp();
+}
+
+void lidarTriggered() {
+  if(lidar_triggered_states == LTS_STOPPING_ROBOT){
+    //Set motor speed to 0 in 0.5 seconds
+    Encoder_1.setTarPWM(0);
+    Encoder_2.setTarPWM(0);
+    registerPositionChange(20.0);
+    _delay(0.5);
+  
+    //Show red color on LED-ring
+    rgbled_0.setColor(0, ledBlue[0], ledBlue[1], ledBlue[2]);
+    rgbled_0.show();
+  
+    //Tell Raspberry Pi that we have stoped due to lidar triggered
+    Serial.print("LOK");
+    lidar_triggered_states = LTS_WAITING_ON_PIC_TAKEN;
+  }
+  else if(lidar_triggered_states == LTS_WAITING_ON_PIC_TAKEN){
+    return;
+  }
+  else if(lidar_triggered_states == LTS_TURNING_AWAY_FROM_OBSTACLE){
+    //Go backwards in 0.5 seconds, 50% of maximum speed
+    setTimestamp();
+    move(2, 50 / 100.0 * 255);
+    _delay(0.5);
+    registerPositionChange(-1*20.0);
+    move(2, 0);
+  
+    //Choose left or right randomly and turn in  1 second 50% of speed
+    int randomDirection = rand() % 2 + 3;
+    move(randomDirection, 50 / 100.0 * 255);
+    _delay(1);
+    move(randomDirection, 0);
+    setTimestamp();
+    lidar_triggered_states = LTS_NOT_TRIGGERED;
+  }
 }
 
 void autoDriveForward() {
