@@ -67,7 +67,7 @@ void registerPositionChange(float speed_cm_per_sec){
   coordinates[amount_of_samples].x = current_position.x;
   coordinates[amount_of_samples].y = current_position.y;
   amount_of_samples++;
-  printCoordinates();
+  //printCoordinates();
 }
 
 void printCoordinates(){

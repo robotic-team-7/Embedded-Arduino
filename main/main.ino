@@ -28,7 +28,7 @@ typedef enum{
 } s_modes;
 
 s_modes mode = S_MANUAL;
-String command;
+char command[2];
 
 typedef enum {
   M_FORWARD,
@@ -101,10 +101,9 @@ void checkSerialInput() {
     for(int i = 0; i < availableSerial + 1; i++)
     {
       buff[i] = Serial.read();
+      command[i] = buff[i];
     }
 
-    command = String(buff);
-      
     if (buff[0] == 'A' && buff[1] == 'M') 
     {
       mode = S_AUTO;
@@ -201,7 +200,7 @@ void autoMode()
     autoModeStarted = true;
   }
 
-  if(command.equals("LT"))
+  if(command[0] == 'L' && command[1] == 'T')
   {
     //Show blue color on LED-ring
     rgbled_0.setColor(0,ledBlue[0],ledBlue[1],ledBlue[2]);
@@ -218,7 +217,15 @@ void autoMode()
 
     //Sending message that we have stopped
     Serial.print("LOK");
-    command = "";
+    
+    command[0] = '\0';
+    command[1] = '\0';   
+    
+    //Choose left or right randomly and turn in  1 second 50% of speed
+    int randomDirection = rand() % 2 + 3;
+    move(randomDirection, 50 / 100.0 * 255);
+    _delay(1);
+    move(randomDirection, 0);
   }
   
   else if(linefollower_9.readSensors() == 0.000000)
