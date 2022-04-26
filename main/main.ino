@@ -20,13 +20,16 @@ float led_brightness = 0.1;
 int ledRed[3] = {(int)(255 * led_brightness), 0, 0};
 int ledGreen[3] = {0, (int)(255 * led_brightness), 0};
 int ledBlue[3] = {0, 0, (int)(255 * led_brightness)};
+int ledYellow[3] = {(int)(255 * led_brightness), (int)(255 * led_brightness), 0};
+
+unsigned long timestamp_last_sample = 0;
 
 typedef enum {
   S_AUTO,
   S_MANUAL
 } s_modes;
 
-s_modes mode = S_AUTO;
+s_modes mode = S_MANUAL;
 
 typedef enum {
   M_FORWARD,
@@ -104,10 +107,12 @@ void checkSerialInput() {
       buff[i] = Serial.read();
     }
 
-    if (buff[0] == 'A' && buff[1] == 'M') {
+    if (buff[0] == 'A' && buff[1] == 'M' && mode != S_AUTO) {
+      lidar_triggered_states = LTS_NOT_TRIGGERED;
+      autoModeStarted = false;
       mode = S_AUTO;
     }
-    else if (buff[0] == 'M' && buff[1] == 'M') {
+    else if (buff[0] == 'M' && buff[1] == 'M' && mode != S_MANUAL) {
       mode = S_MANUAL;
     }
     else if (mode == S_MANUAL){
@@ -132,6 +137,9 @@ void checkSerialInput() {
     }
     else if(lidar_triggered_states == LTS_WAITING_ON_PIC_TAKEN && buff[0] == 'P' && buff[1] == 'T'){
       lidar_triggered_states = LTS_TURNING_AWAY_FROM_OBSTACLE;
+    }
+    else{
+      Serial.print("UC");
     }
   }
 }
@@ -195,9 +203,9 @@ void autoMode() {
     setTimestamp();
     autoModeStarted = true;
   }
+  
   if (linefollower_9.readSensors() == 0.000000) {
     lineFollowerTriggered();
-
   }
   else if(lidar_triggered_states != LTS_NOT_TRIGGERED){
      lidarTriggered();
@@ -208,8 +216,9 @@ void autoMode() {
 }
 
 void manualMode() {
-  rgbled_0.setColor(0, 0, 0, 0);
+  rgbled_0.setColor(0, ledYellow[0], ledYellow[1], ledYellow[2]);
   rgbled_0.show();
+  
   switch(manual_direction){
     case M_NONE:
       move(1,0);
@@ -247,10 +256,10 @@ void lineFollowerTriggered() {
   registerPositionChange(-1*20.0);
   move(2, 0);
 
-  //Choose left or right randomly and turn in  1 second 50% of speed
+  //Choose left or right randomly and turn in  2 second 50% of speed
   int randomDirection = rand() % 2 + 3;
   move(randomDirection, 50 / 100.0 * 255);
-  _delay(1);
+  _delay(2);
   move(randomDirection, 0);
   setTimestamp();
 }
@@ -296,6 +305,12 @@ void autoDriveForward() {
   //Show green color on LED-ring
   rgbled_0.setColor(0, ledGreen[0], ledGreen[1], ledGreen[2]);
   rgbled_0.show();
+
+  //Sample coordinates and send every second
+  if(millis() > timestamp_last_sample + 250){
+    registerPositionChange(20.0);
+    timestamp_last_sample = millis();
+  }
 
   //Go forward, 50% of maximum speed
   move(1, 50 / 100.0 * 255);

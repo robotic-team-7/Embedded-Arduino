@@ -71,11 +71,11 @@ void registerPositionChange(float speed_cm_per_sec){
 }
 
 void printCoordinates(){
-
+  Serial.print("(");
   Serial.print(current_position.x);
-  Serial.print("\n");
+  Serial.print(",");
   Serial.print(current_position.y);
-  Serial.print("\n");
+  Serial.print(")");
   Serial.print("\n");
 
   /*
