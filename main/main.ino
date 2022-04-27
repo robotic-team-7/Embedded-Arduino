@@ -163,7 +163,7 @@ void setup() {
 
   gyro.begin();
 
-  init(&Encoder_1, &gyro);
+  positioning_init(&gyro);
   led_init();
 
   randomSeed((unsigned long)(lightsensor_12.read() * 123456));

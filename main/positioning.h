@@ -18,21 +18,7 @@ typedef struct coordinate{
 *Takes a MeEncoderOnBoard reference
 *Returns nothing
 */
-void init(MeEncoderOnBoard* encoder, MeGyro* gyro0);
-
-/*
-*Gets the current speed in cm per second
-*Suggestion is to call this function when:
-*   Mower starts moving forward
-*   Mower is reversing
-*   Mower stops
-*   
-*   Can be used as a parameter for get_distance_traveled()
-*NOTE!
-*Getting the current speed is based on the right wheel
-*Returns speed in units of cm/sec
-*/
-float get_current_speed_cm_per_second();
+void positioning_init(MeGyro* gyro0);
 
 /*
 *Used to get time passed since last timestamp

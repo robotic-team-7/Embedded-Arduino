@@ -4,7 +4,6 @@
 #define SECONDS_IN_MINUTE 60
 
 Coordinate current_position;
-MeEncoderOnBoard* encoder_motor; //Might delete, not used right now
 MeGyro* gyroscope;
 
 int amount_of_samples = 0;
@@ -13,8 +12,7 @@ Coordinate coordinates[32];
 
 unsigned long timestamp = 0;
 
-void init(MeEncoderOnBoard* encoder, MeGyro* gyro0){
-    encoder_motor = encoder;
+void positioning_init(MeGyro* gyro0){
     gyroscope = gyro0;
     current_position = {0, 0};
 
@@ -22,11 +20,6 @@ void init(MeEncoderOnBoard* encoder, MeGyro* gyro0){
       coordinates[i].x = 0;
       coordinates[i].y = 0;
     }
-}
-
-//Not used right now, might delete
-float get_current_speed_cm_per_second(){
-  return WHEEL_CIRCUMFERENCE_IN_CM * encoder_motor->getCurrentSpeed() / SECONDS_IN_MINUTE;
 }
 
 double degrees_to_radians(float angle_in_degrees){
