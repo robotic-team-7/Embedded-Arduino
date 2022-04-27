@@ -6,21 +6,13 @@
 #include <stdlib.h>
 #include <time.h>
 #include "positioning.h"
+#include "led.h"
+
 MeLightSensor lightsensor_12(12);
 MeEncoderOnBoard Encoder_1(SLOT1);
 MeEncoderOnBoard Encoder_2(SLOT2);
-MeRGBLed rgbled_0(0, 12);
 MeLineFollower linefollower_9(9);
 MeGyro gyro(0, 0x69);
-
-//Adjust brightness of LED-ring. 0.0 = minimum brightness, 1.0 = maximum brightness
-float led_brightness = 0.1;
-
-//Define standard colors and adjust brightness
-int ledRed[3] = {(int)(255 * led_brightness), 0, 0};
-int ledGreen[3] = {0, (int)(255 * led_brightness), 0};
-int ledBlue[3] = {0, 0, (int)(255 * led_brightness)};
-int ledYellow[3] = {(int)(255 * led_brightness), (int)(255 * led_brightness), 0};
 
 unsigned long timestamp_last_sample = 0;
 
@@ -29,7 +21,7 @@ typedef enum {
   S_MANUAL
 } s_modes;
 
-s_modes mode = S_MANUAL;
+s_modes mode = S_AUTO;
 
 typedef enum {
   M_FORWARD,
@@ -172,6 +164,7 @@ void setup() {
   gyro.begin();
 
   init(&Encoder_1, &gyro);
+  led_init();
 
   randomSeed((unsigned long)(lightsensor_12.read() * 123456));
   TCCR1A = _BV(WGM10);
@@ -180,8 +173,6 @@ void setup() {
   TCCR2B = _BV(CS21);
   attachInterrupt(Encoder_1.getIntNum(), isr_process_encoder1, RISING);
   attachInterrupt(Encoder_2.getIntNum(), isr_process_encoder2, RISING);
-  rgbled_0.setpin(44);
-  rgbled_0.fillPixelsBak(0, 2, 1);
 
   while (1) {
     checkSerialInput();
@@ -216,8 +207,7 @@ void autoMode() {
 }
 
 void manualMode() {
-  rgbled_0.setColor(0, ledYellow[0], ledYellow[1], ledYellow[2]);
-  rgbled_0.show();
+  set_leds_yellow();
   
   switch(manual_direction){
     case M_NONE:
@@ -245,9 +235,7 @@ void lineFollowerTriggered() {
   registerPositionChange(20.0);
   _delay(0.5);
 
-  //Show red color on LED-ring
-  rgbled_0.setColor(0, ledRed[0], ledRed[1], ledRed[2]);
-  rgbled_0.show();
+  set_leds_red();
 
   //Go backwards in 0.5 seconds, 50% of maximum speed
   setTimestamp();
@@ -273,8 +261,7 @@ void lidarTriggered() {
     _delay(0.5);
   
     //Show red color on LED-ring
-    rgbled_0.setColor(0, ledBlue[0], ledBlue[1], ledBlue[2]);
-    rgbled_0.show();
+    set_leds_blue();
   
     //Tell Raspberry Pi that we have stoped due to lidar triggered
     Serial.print("LOK");
@@ -303,8 +290,7 @@ void lidarTriggered() {
 
 void autoDriveForward() {
   //Show green color on LED-ring
-  rgbled_0.setColor(0, ledGreen[0], ledGreen[1], ledGreen[2]);
-  rgbled_0.show();
+  set_leds_green();
 
   //Sample coordinates and send every second
   if(millis() > timestamp_last_sample + 250){
