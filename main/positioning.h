@@ -12,6 +12,7 @@ typedef struct coordinate{
     float y;
 }Coordinate;
 
+float get_current_speed(MeEncoderOnBoard* encoder);
 
 /*
 *Used to initiate positioning module
