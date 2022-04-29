@@ -169,7 +169,7 @@ void manualMode() {
 void lineFollowerTriggered() {
   //Set motor speed to 0 in 0.5 seconds
   set_encoders_tar_pwm(0, 0);
-  registerPositionChange(20.0);
+  registerPositionChange(26.0);
   _delay(0.5);
 
   set_leds_red();
@@ -178,7 +178,7 @@ void lineFollowerTriggered() {
   setTimestamp();
   move(2, 50 / 100.0 * 255);
   _delay(0.5);
-  registerPositionChange(-1*20.0);
+  registerPositionChange(-1*26.0);
   move(2, 0);
 
   //Choose left or right randomly and turn in  2 second 50% of speed
@@ -193,7 +193,7 @@ void lidarTriggered() {
   if(lidar_triggered_states == LTS_STOPPING_ROBOT){
     //Set motor speed to 0 in 0.5 seconds
     set_encoders_tar_pwm(0, 0);
-    registerPositionChange(20.0);
+    registerPositionChange(26.0);
     _delay(0.5);
   
     //Show red color on LED-ring
@@ -211,7 +211,7 @@ void lidarTriggered() {
     setTimestamp();
     move(2, 50 / 100.0 * 255);
     _delay(0.5);
-    registerPositionChange(-1*20.0);
+    registerPositionChange(-1*26.0);
     move(2, 0);
   
     //Choose left or right randomly and turn in  1 second 50% of speed

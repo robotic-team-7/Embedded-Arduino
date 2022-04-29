@@ -1,7 +1,7 @@
 #include "positioning.h"
 
-#define WHEEL_CIRCUMFERENCE_IN_CM 16
-#define SECONDS_IN_MINUTE 60
+#define RADIUS 16.0
+#define SECONDS_IN_MINUTE 60.0
 
 Coordinate current_position;
 MeGyro* gyroscope;
@@ -20,6 +20,13 @@ void positioning_init(MeGyro* gyro0){
       coordinates[i].x = 0;
       coordinates[i].y = 0;
     }
+}
+
+float get_current_speed(MeEncoderOnBoard* encoder){
+  float rotations_per_second = encoder->getCurrentSpeed() / SECONDS_IN_MINUTE;
+  float cm_per_second = 2 * M_PI * RADIUS * rotations_per_second;
+  return cm_per_second;
+  
 }
 
 double degrees_to_radians(float angle_in_degrees){
