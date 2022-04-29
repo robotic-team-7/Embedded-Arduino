@@ -54,14 +54,38 @@ double degrees_to_radians(float angle_in_degrees);
 */
 float get_distance_traveled(float speed_cm_per_sec, float time_in_seconds);
 
+/*
+*Used to get the last calculated x-coordinate.
+*Returns a float value representing traveled distance on the x-axis in cm.
+*/
 float getCoordinateX();
 
+/*
+*Used to get the last calculated y-coordinate.
+*Returns a float value representing traveled distance on the y-axis in cm.
+*/
 float getCoordinateY();
 
+/*
+*Used to set timestamp which is used to calculate distance
+*Suggestion is to call this function every time robot starts
+*travel a new path or during a travel after registerPositionChange has been called.
+*Returns nothing.
+*/
 void setTimestamp();
 
+/*
+*Used to update coordinates. 
+*Suggestion is to call this function periodically or at a path change.
+*SetTimestamp should be called afterwards, when a new travel starts.
+*Returns nothing.
+*/
 void registerPositionChange(float speed_cm_per_sec);
 
+/*
+*Prints the latest sampled coordinates.
+*Returns nothing.
+*/
 void printCoordinates();
 
 

@@ -20,10 +20,27 @@ typedef enum {
   M_NONE
 } m_direction;
 
+/*
+* Should be called once in the set-up code. 
+* Sets-up motors and states.
+* Returns nothing.
+*/
 void drive_control_init();
 
+/*
+*Called to set motor speed and direction. 
+*Takes parameters direction and speed:
+* Direction should be a value between 1-4:
+*   1 = forward
+*   2 = backwards
+*   3 = left
+*   4 = right
+*/
 void move(int direction, int speed);
 
+/*
+* Returns current drive mode as a s_mode enum
+*/
 s_modes get_drive_mode();
 
 void set_encoders_tar_pwm(int encoder_1, int encoder_2);
