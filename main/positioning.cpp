@@ -70,6 +70,15 @@ void registerPositionChange(float speed_cm_per_sec){
   printCoordinates();
 }
 
+float driven_distance(long pulses_left_motor, int pulses_right_motor){
+  float pulses_per_cm = 27.71;
+
+  float distance_left_motor = (pulses_left_motor * -1) / pulses_per_cm;
+  float distance_right_motor = pulses_right_motor / pulses_per_cm;
+
+  return (distance_left_motor + distance_right_motor) /2;
+}
+
 void printCoordinates(){
   Serial.print("(");
   Serial.print(current_position.x);

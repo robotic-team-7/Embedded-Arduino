@@ -126,6 +126,8 @@ void setup() {
   }
 }
 
+
+
 void autoMode() {
   //Needed in order to take an accurate timestamp when starting autoMode
   if(is_auto_mode_started() == false){

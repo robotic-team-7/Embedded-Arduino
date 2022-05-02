@@ -21,7 +21,9 @@ void isr_process_encoder1(void)
   } else {
     Encoder_1.pulsePosPlus();
   }
+
 }
+
 void isr_process_encoder2(void)
 {
   if (digitalRead(Encoder_2.getPortB()) == 0) {
@@ -29,6 +31,28 @@ void isr_process_encoder2(void)
   } else {
     Encoder_2.pulsePosPlus();
   }
+
+}
+
+Encoder_data getEncoderPosOfMotor(){
+  Encoder_data encoder_return_data;
+  encoder_return_data.left_motor = Encoder_1.getPulsePos();
+  encoder_return_data.right_motor = Encoder_2.getPulsePos();
+  
+  return encoder_return_data;
+}
+
+void reset_encoders(){
+  Encoder_1.reset(SLOT_1);
+  Encoder_2.reset(SLOT_2);
+}
+
+void print_encoder_data(){
+  Serial.print("Motor 1: ");
+  Serial.println(Encoder_1.getPulsePos());
+  
+  Serial.print("Motor 2: ");
+  Serial.println(Encoder_2.getPulsePos());
 }
 
 void move(int direction, int speed)

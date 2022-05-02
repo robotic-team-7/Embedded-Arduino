@@ -20,6 +20,11 @@ typedef enum {
   M_NONE
 } m_direction;
 
+typedef struct encoder_data{
+    long left_motor;
+    long right_motor;
+}Encoder_data;
+
 /*
 * Should be called once in the set-up code. 
 * Sets-up motors and states.
@@ -60,5 +65,20 @@ void set_auto_mode_started(bool is_started);
 m_direction get_manual_direction();
 
 void set_manual_direction(m_direction new_manual_direction);
+
+void print_encoder_data();
+
+/*
+* Returns a struct containing information about registered pulses on each motor
+* Suggestion to call reset_encoders() after calling this function in order to start a new messurement
+* with a new starting position. Otherwise it continues to count from the same start position.
+*/
+Encoder_data getEncoderPosOfMotor();
+
+/*
+*Resets the encoder motor pulse counters 
+*Returns nothing
+*/
+void reset_encoders();
 
 #endif

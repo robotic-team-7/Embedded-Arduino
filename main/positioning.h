@@ -84,6 +84,12 @@ void setTimestamp();
 void registerPositionChange(float speed_cm_per_sec);
 
 /*
+*Used to calculate distance traveled through encoder pulses. 
+*Returns a float representing distance traveled in cm.
+*/
+float driven_distance(long pulses_left_motor, int pulses_right_motor);
+
+/*
 *Prints the latest sampled coordinates.
 *Returns nothing.
 */
