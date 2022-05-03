@@ -58,12 +58,24 @@ void setTimestamp(){
   timestamp = millis();
 }
 
-void registerPositionChange(float speed_cm_per_sec){
+/*void registerPositionChange(float speed_cm_per_sec){
   gyroscope->update();
   float time_passed = get_time_passed(timestamp) / 1000;
   float distance = get_distance_traveled(speed_cm_per_sec, time_passed);
   update_coordinates(distance, degrees_to_radians(gyroscope->getAngle(3)));
 
+  coordinates[amount_of_samples].x = current_position.x;
+  coordinates[amount_of_samples].y = current_position.y;
+  amount_of_samples++;
+  printCoordinates();
+}*/
+
+void registerPositionChange(float distance){
+  gyroscope->update();
+  update_coordinates(distance, degrees_to_radians(gyroscope->getAngle(3)));
+  reset_encoders();
+
+  //I am unsure what this does
   coordinates[amount_of_samples].x = current_position.x;
   coordinates[amount_of_samples].y = current_position.y;
   amount_of_samples++;

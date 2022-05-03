@@ -43,8 +43,10 @@ Encoder_data getEncoderPosOfMotor(){
 }
 
 void reset_encoders(){
-  Encoder_1.reset(SLOT_1);
-  Encoder_2.reset(SLOT_2);
+  //Encoder_1.reset(SLOT_1);
+  //Encoder_2.reset(SLOT_2);
+  Encoder_1.setPulsePos(0);
+  Encoder_2.setPulsePos(0);
 }
 
 void print_encoder_data(){

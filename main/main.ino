@@ -111,6 +111,7 @@ void setup() {
   positioning_init(&gyro);
   led_init();
   drive_control_init();
+  reset_encoders();
 
   while (1) {
     checkSerialInput();
@@ -126,12 +127,9 @@ void setup() {
   }
 }
 
-
-
 void autoMode() {
   //Needed in order to take an accurate timestamp when starting autoMode
   if(is_auto_mode_started() == false){
-    setTimestamp();
     set_auto_mode_started(true);
   }
   
@@ -171,32 +169,39 @@ void manualMode() {
 void lineFollowerTriggered() {
   //Set motor speed to 0 in 0.5 seconds
   set_encoders_tar_pwm(0, 0);
-  registerPositionChange(26.0);
-  _delay(0.5);
+
+  _delay(1);  //Stop motors completely
+  Encoder_data encoder_data = getEncoderPosOfMotor();
+  float distance = driven_distance(encoder_data.left_motor, encoder_data.right_motor);
+  registerPositionChange(distance);
 
   set_leds_red();
 
   //Go backwards in 0.5 seconds, 50% of maximum speed
-  setTimestamp();
   move(2, 50 / 100.0 * 255);
   _delay(0.5);
-  registerPositionChange(-1*26.0);
   move(2, 0);
+  _delay(1);  //Let motors come to a complete stop
+  encoder_data = getEncoderPosOfMotor();
+  distance = driven_distance(encoder_data.left_motor, encoder_data.right_motor);
+  registerPositionChange(-distance);
 
   //Choose left or right randomly and turn in  2 second 50% of speed
   int randomDirection = rand() % 2 + 3;
   move(randomDirection, 50 / 100.0 * 255);
   _delay(2);
   move(randomDirection, 0);
-  setTimestamp();
+  reset_encoders(); //Rotation is stationary and therefore not counted as moving
 }
 
 void lidarTriggered() {
   if(lidar_triggered_states == LTS_STOPPING_ROBOT){
     //Set motor speed to 0 in 0.5 seconds
     set_encoders_tar_pwm(0, 0);
-    registerPositionChange(26.0);
-    _delay(0.5);
+    _delay(1);  //Let wheels halt completely
+    Encoder_data encoder_data = getEncoderPosOfMotor();
+    float distance = driven_distance(encoder_data.left_motor, encoder_data.right_motor);
+    registerPositionChange(distance);
   
     //Show red color on LED-ring
     set_leds_blue();
@@ -210,19 +215,21 @@ void lidarTriggered() {
   }
   else if(lidar_triggered_states == LTS_TURNING_AWAY_FROM_OBSTACLE){
     //Go backwards in 0.5 seconds, 50% of maximum speed
-    setTimestamp();
     move(2, 50 / 100.0 * 255);
     _delay(0.5);
-    registerPositionChange(-1*26.0);
     move(2, 0);
+    _delay(1);  //To let wheels come to a complete halt
+    Encoder_data encoder_data = getEncoderPosOfMotor();
+    float distance = driven_distance(encoder_data.left_motor, encoder_data.right_motor);
+    registerPositionChange(-distance);
   
     //Choose left or right randomly and turn in  1 second 50% of speed
     int randomDirection = rand() % 2 + 3;
     move(randomDirection, 50 / 100.0 * 255);
     _delay(1);
     move(randomDirection, 0);
-    setTimestamp();
     lidar_triggered_states = LTS_NOT_TRIGGERED;
+    reset_encoders(); //Rotating is not changing the position
   }
 }
 
@@ -232,9 +239,10 @@ void autoDriveForward() {
 
   //Sample coordinates and send every second
   if(millis() > timestamp_last_sample + 250){
-    registerPositionChange(26.0);
+    Encoder_data encoder_data = getEncoderPosOfMotor();
+    float distance = driven_distance(encoder_data.left_motor, encoder_data.right_motor);
+    registerPositionChange(distance);
     timestamp_last_sample = millis();
-    setTimestamp();
   }
 
   //Go forward, 50% of maximum speed

@@ -4,6 +4,7 @@
 #include <MeEncoderOnBoard.h>
 #include <MeGyro.h>
 #include <math.h>
+#include "drive_control.h"
 
 
 
@@ -81,7 +82,8 @@ void setTimestamp();
 *SetTimestamp should be called afterwards, when a new travel starts.
 *Returns nothing.
 */
-void registerPositionChange(float speed_cm_per_sec);
+//void registerPositionChange(float speed_cm_per_sec);
+void registerPositionChange(float encoder_data);
 
 /*
 *Used to calculate distance traveled through encoder pulses. 
@@ -94,6 +96,8 @@ float driven_distance(long pulses_left_motor, int pulses_right_motor);
 *Returns nothing.
 */
 void printCoordinates();
+
+
 
 
 #endif
