@@ -4,12 +4,10 @@ MeEncoderOnBoard Encoder_1(SLOT1);
 MeEncoderOnBoard Encoder_2(SLOT2);
 m_direction manual_direction;
 s_modes mode;
-bool autoModeStarted;
 
 void drive_control_init(){
     manual_direction = M_NONE;
     mode = S_AUTO;
-    autoModeStarted = false;
     attachInterrupt(Encoder_1.getIntNum(), isr_process_encoder1, RISING);
     attachInterrupt(Encoder_2.getIntNum(), isr_process_encoder2, RISING);
 }
@@ -21,7 +19,6 @@ void isr_process_encoder1(void)
   } else {
     Encoder_1.pulsePosPlus();
   }
-
 }
 
 void isr_process_encoder2(void)
@@ -31,10 +28,9 @@ void isr_process_encoder2(void)
   } else {
     Encoder_2.pulsePosPlus();
   }
-
 }
 
-Encoder_data getEncoderPosOfMotor(){
+Encoder_data get_encoder_pos_of_motor(){
   Encoder_data encoder_return_data;
   encoder_return_data.left_motor = Encoder_1.getPulsePos();
   encoder_return_data.right_motor = Encoder_2.getPulsePos();
@@ -43,41 +39,31 @@ Encoder_data getEncoderPosOfMotor(){
 }
 
 void reset_encoders(){
-  //Encoder_1.reset(SLOT_1);
-  //Encoder_2.reset(SLOT_2);
   Encoder_1.setPulsePos(0);
   Encoder_2.setPulsePos(0);
-}
-
-void print_encoder_data(){
-  Serial.print("Motor 1: ");
-  Serial.println(Encoder_1.getPulsePos());
-  
-  Serial.print("Motor 2: ");
-  Serial.println(Encoder_2.getPulsePos());
 }
 
 void move(int direction, int speed)
 {
   static int offset = 10;
-  int leftSpeed = 0;
-  int rightSpeed = 0;
+  int left_speed = 0;
+  int right_speed = 0;
   if (direction == 1) { //Move forward
-    leftSpeed = -speed;
-    rightSpeed = speed+offset;
+    left_speed = -speed;
+    right_speed = speed+offset;
   } else if (direction == 2) { //Move backwards
-    leftSpeed = speed;
-    rightSpeed = -speed-offset;
+    left_speed = speed;
+    right_speed = -speed-offset;
   } else if (direction == 3) { //Turn left
-    leftSpeed = -speed;
-    rightSpeed = -speed-offset;
+    left_speed = -speed;
+    right_speed = -speed-offset;
   } else if (direction == 4) { //Turn right
-    leftSpeed = speed;
-    rightSpeed = speed+offset;
+    left_speed = speed;
+    right_speed = speed+offset;
   }
   //Update motors speed
-  Encoder_1.setTarPWM(leftSpeed);
-  Encoder_2.setTarPWM(rightSpeed);
+  Encoder_1.setTarPWM(left_speed);
+  Encoder_2.setTarPWM(right_speed);
 }
 
 s_modes get_drive_mode(){
@@ -96,14 +82,6 @@ void encoders_loop(){
 
 void set_drive_mode(s_modes new_mode){
     mode = new_mode;
-}
-
-bool is_auto_mode_started(){
-    return autoModeStarted;
-}
-
-void set_auto_mode_started(bool is_started){
-    autoModeStarted = is_started;
 }
 
 m_direction get_manual_direction(){

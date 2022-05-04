@@ -60,13 +60,13 @@ float get_distance_traveled(float speed_cm_per_sec, float time_in_seconds);
 *Used to get the last calculated x-coordinate.
 *Returns a float value representing traveled distance on the x-axis in cm.
 */
-float getCoordinateX();
+float get_coordinate_x();
 
 /*
 *Used to get the last calculated y-coordinate.
 *Returns a float value representing traveled distance on the y-axis in cm.
 */
-float getCoordinateY();
+float get_coordinate_y();
 
 /*
 *Used to set timestamp which is used to calculate distance
@@ -74,7 +74,7 @@ float getCoordinateY();
 *travel a new path or during a travel after registerPositionChange has been called.
 *Returns nothing.
 */
-void setTimestamp();
+void set_timestamp();
 
 /*
 *Used to update coordinates. 
@@ -82,8 +82,7 @@ void setTimestamp();
 *SetTimestamp should be called afterwards, when a new travel starts.
 *Returns nothing.
 */
-//void registerPositionChange(float speed_cm_per_sec);
-void registerPositionChange(float encoder_data);
+void register_position_change(float encoder_data);
 
 /*
 *Used to calculate distance traveled through encoder pulses. 
@@ -92,12 +91,9 @@ void registerPositionChange(float encoder_data);
 float driven_distance(long pulses_left_motor, int pulses_right_motor);
 
 /*
-*Prints the latest sampled coordinates.
+*Sends the latest sampled coordinates.
 *Returns nothing.
 */
-void printCoordinates();
-
-
-
+void send_coordinates();
 
 #endif

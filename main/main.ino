@@ -28,22 +28,21 @@ void _delay(float seconds) {
   if (seconds < 0.0) {
     seconds = 0.0;
   }
-  long endTime = millis() + seconds * 1000;
-  while (millis() < endTime) _loop();
+  long end_time = millis() + seconds * 1000;
+  while (millis() < end_time) _loop();
 }
 
-void checkSerialInput() {
+void check_serial_input() {
   if (Serial.available() > 1) {
-    int availableSerial = Serial.available();
-    char buff[availableSerial];
+    int available_serial = Serial.available();
+    char buff[available_serial];
     
-    for(int i = 0; i < availableSerial + 1; i++){
+    for(int i = 0; i < available_serial + 1; i++){
       buff[i] = Serial.read();
     }
 
     if (buff[0] == 'A' && buff[1] == 'M' && get_drive_mode() != S_AUTO) {
       lidar_triggered_states = LTS_NOT_TRIGGERED;
-      set_auto_mode_started(false);
       set_drive_mode(S_AUTO);
     }
     else if (buff[0] == 'M' && buff[1] == 'M' && get_drive_mode() != S_MANUAL) {
@@ -78,25 +77,6 @@ void checkSerialInput() {
   }
 }
 
-void debugTrackingPrint(unsigned long timestamp, float distance) {
-  Serial.print("Timestamp: ");
-  Serial.print(get_time_passed(timestamp) / 1000);
-  Serial.print("\n");
-  Serial.print("Distance: ");
-  Serial.print(distance);
-  Serial.print("\n");
-  Serial.print("GYRO Z: ");
-  Serial.print(gyro.getAngle(3));
-  Serial.print("\n");
-  Serial.print( "X: ");
-  Serial.print(getCoordinateX());
-  Serial.print( "Y: ");
-  Serial.print(getCoordinateY());
-  Serial.print("\n");
-  Serial.print("\n");
-  Serial.print("\n");
-}
-
 void setup() {
   Serial.begin(115200);
 
@@ -114,37 +94,32 @@ void setup() {
   reset_encoders();
 
   while (1) {
-    checkSerialInput();
+    check_serial_input();
 
     if (get_drive_mode() == S_AUTO) {
-      autoMode();
+      auto_mode();
     }
     else if (get_drive_mode() == S_MANUAL) {
-      manualMode();
+      manual_mode();
     }
 
     _loop();
   }
 }
 
-void autoMode() {
-  //Needed in order to take an accurate timestamp when starting autoMode
-  if(is_auto_mode_started() == false){
-    set_auto_mode_started(true);
-  }
-  
+void auto_mode() {
   if (linefollower_9.readSensors() == 0.000000) {
-    lineFollowerTriggered();
+    line_follower_triggered();
   }
   else if(lidar_triggered_states != LTS_NOT_TRIGGERED){
-     lidarTriggered();
+     lidar_triggered();
   }
   else {
-    autoDriveForward();
+    auto_drive_forward();
   }
 }
 
-void manualMode() {
+void manual_mode() {
   set_leds_yellow();
   
   switch(get_manual_direction()){
@@ -166,14 +141,14 @@ void manualMode() {
   }
 }
 
-void lineFollowerTriggered() {
+void line_follower_triggered() {
   //Set motor speed to 0 in 0.5 seconds
   set_encoders_tar_pwm(0, 0);
 
   _delay(1);  //Stop motors completely
-  Encoder_data encoder_data = getEncoderPosOfMotor();
+  Encoder_data encoder_data = get_encoder_pos_of_motor();
   float distance = driven_distance(encoder_data.left_motor, encoder_data.right_motor);
-  registerPositionChange(distance);
+  register_position_change(distance);
 
   set_leds_red();
 
@@ -182,26 +157,26 @@ void lineFollowerTriggered() {
   _delay(0.5);
   move(2, 0);
   _delay(1);  //Let motors come to a complete stop
-  encoder_data = getEncoderPosOfMotor();
+  encoder_data = get_encoder_pos_of_motor();
   distance = driven_distance(encoder_data.left_motor, encoder_data.right_motor);
-  registerPositionChange(-distance);
+  register_position_change(-distance);
 
   //Choose left or right randomly and turn in  2 second 50% of speed
-  int randomDirection = rand() % 2 + 3;
-  move(randomDirection, 50 / 100.0 * 255);
-  _delay(2);
-  move(randomDirection, 0);
+  int random_direction = rand() % 2 + 3;
+  move(random_direction, 50 / 100.0 * 255);
+  _delay(1);
+  move(random_direction, 0);
   reset_encoders(); //Rotation is stationary and therefore not counted as moving
 }
 
-void lidarTriggered() {
+void lidar_triggered() {
   if(lidar_triggered_states == LTS_STOPPING_ROBOT){
     //Set motor speed to 0 in 0.5 seconds
     set_encoders_tar_pwm(0, 0);
     _delay(1);  //Let wheels halt completely
-    Encoder_data encoder_data = getEncoderPosOfMotor();
+    Encoder_data encoder_data = get_encoder_pos_of_motor();
     float distance = driven_distance(encoder_data.left_motor, encoder_data.right_motor);
-    registerPositionChange(distance);
+    register_position_change(distance);
   
     //Show red color on LED-ring
     set_leds_blue();
@@ -219,29 +194,29 @@ void lidarTriggered() {
     _delay(0.5);
     move(2, 0);
     _delay(1);  //To let wheels come to a complete halt
-    Encoder_data encoder_data = getEncoderPosOfMotor();
+    Encoder_data encoder_data = get_encoder_pos_of_motor();
     float distance = driven_distance(encoder_data.left_motor, encoder_data.right_motor);
-    registerPositionChange(-distance);
+    register_position_change(-distance);
   
     //Choose left or right randomly and turn in  1 second 50% of speed
-    int randomDirection = rand() % 2 + 3;
-    move(randomDirection, 50 / 100.0 * 255);
+    int random_direction = rand() % 2 + 3;
+    move(random_direction, 50 / 100.0 * 255);
     _delay(1);
-    move(randomDirection, 0);
+    move(random_direction, 0);
     lidar_triggered_states = LTS_NOT_TRIGGERED;
     reset_encoders(); //Rotating is not changing the position
   }
 }
 
-void autoDriveForward() {
+void auto_drive_forward() {
   //Show green color on LED-ring
   set_leds_green();
 
-  //Sample coordinates and send every second
+  //Sample coordinates and send every 0.25 second
   if(millis() > timestamp_last_sample + 250){
-    Encoder_data encoder_data = getEncoderPosOfMotor();
+    Encoder_data encoder_data = get_encoder_pos_of_motor();
     float distance = driven_distance(encoder_data.left_motor, encoder_data.right_motor);
-    registerPositionChange(distance);
+    register_position_change(distance);
     timestamp_last_sample = millis();
   }
 
@@ -249,28 +224,9 @@ void autoDriveForward() {
   move(1, 50 / 100.0 * 255);
 }
 
-//For debug purpose
-void print_gyro_values() {
-  Serial.print("X: ");
-  Serial.print(gyro.getAngle(1));
-  Serial.print("Y: ");
-  Serial.print(gyro.getAngle(2));
-  Serial.print("Z: ");
-  Serial.print(gyro.getAngle(3));
-  Serial.print("\n");
-  Serial.print("X GYRO: ");
-  Serial.print(gyro.getGyroX());
-  Serial.print("Y GYRO: ");
-  Serial.print(gyro.getGyroY());
-  Serial.print("\n");
-  Serial.print("\n");
-
-}
-
 void _loop() {
   encoders_loop();
   gyro.update();
-  //print_gyro_values(); For debug purpose
 }
 
 void loop() {
