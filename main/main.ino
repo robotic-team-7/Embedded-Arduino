@@ -268,10 +268,10 @@ void manualMode(){
         move(2, speedManual / 100.0 * 255);
         break;
       case M_LEFT:
-        move(3, speedManual / 100.0 * 255);
+        move(3, 40 / 100.0 * 255);
         break;
       case M_RIGHT:
-        move(4, speedManual / 100.0 * 255);
+        move(4, 40 / 100.0 * 255);
         break;
   }
 }
