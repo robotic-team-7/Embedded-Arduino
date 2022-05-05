@@ -14,6 +14,7 @@ MeLineFollower linefollower_9(9);
 MeGyro gyro(0, 0x69);
 
 unsigned long timestamp_last_sample = 0;
+int speed_manual = 50;
 
 typedef enum {
   LTS_NOT_TRIGGERED,
@@ -63,6 +64,16 @@ void check_serial_input() {
       }
       else if(buff[0] == 'M' && buff[1] == 'S'){
         set_manual_direction(M_NONE);
+      }
+      else if(buff[1] == 'I' && buff[0] == 'S')
+      {
+        if(speed_manual != 100)
+          speed_manual += 25;
+      }
+      else if(buff[1] == 'D' && buff[0] == 'S')
+      {
+        if(speed_manual != 25)
+          speed_manual -= 25;
       }
     }
     else if(buff[0] == 'L' && buff[1] == 'T'){ //When in Auto mode, LIDAR triggered command from Raspberry
@@ -119,9 +130,6 @@ void auto_mode() {
   }
 }
 
-
-
-
 void manual_mode() {
   static m_direction previous_direction = get_manual_direction();
   set_leds_yellow();
@@ -139,22 +147,22 @@ void manual_mode() {
       previous_direction = M_NONE;
       break;
     case M_FORWARD:
-      move(1, 50 / 100.0 * 255);
+      move(1, speed_manual/ 100.0 * 255);
       manual_coordinate_update(M_FORWARD);
       previous_direction = M_FORWARD;
       break;
     case M_BACKWARDS:
-      move(2, 50 / 100.0 * 255);
+      move(2, speed_manual / 100.0 * 255);
       manual_coordinate_update(M_BACKWARDS);
       previous_direction = M_BACKWARDS;
       break;
     case M_LEFT:
-      move(3, 50 / 100.0 * 255);
+      move(3, 40 / 100.0 * 255);
       reset_encoders();  //Turning does not count as movement
       previous_direction = M_LEFT;
       break;
     case M_RIGHT:
-      move(4, 50 / 100.0 * 255);
+      move(4, 40 / 100.0 * 255);
       reset_encoders();
       previous_direction = M_RIGHT;
       break;
