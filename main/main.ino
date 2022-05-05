@@ -119,25 +119,79 @@ void auto_mode() {
   }
 }
 
+
+
+
 void manual_mode() {
+  static m_direction previous_direction = get_manual_direction();
   set_leds_yellow();
   
   switch(get_manual_direction()){
     case M_NONE:
       move(1,0);
+      if(previous_direction == M_FORWARD || previous_direction == M_BACKWARDS){ //Need to include the distance traveled between last coordinate update and stop
+        //_delay(0.5);  //Potentially necessary since mower may not stop immediatly
+        immediate_coordinate_update(previous_direction);
+      }
+      else{
+        manual_coordinate_update(M_NONE); //Updates every 0.25 seconds to stay consistent with auto_drive_forward() update rate
+      }
+      previous_direction = M_NONE;
       break;
     case M_FORWARD:
       move(1, 50 / 100.0 * 255);
+      manual_coordinate_update(M_FORWARD);
+      previous_direction = M_FORWARD;
       break;
     case M_BACKWARDS:
       move(2, 50 / 100.0 * 255);
+      manual_coordinate_update(M_BACKWARDS);
+      previous_direction = M_BACKWARDS;
       break;
     case M_LEFT:
       move(3, 50 / 100.0 * 255);
+      reset_encoders();  //Turning does not count as movement
+      previous_direction = M_LEFT;
       break;
     case M_RIGHT:
       move(4, 50 / 100.0 * 255);
+      reset_encoders();
+      previous_direction = M_RIGHT;
       break;
+  }
+}
+
+void manual_coordinate_update(m_direction mower_direction){
+  //Sample coordinates and send every 0.25 second
+  if(millis() > timestamp_last_sample + 250){
+    Encoder_data encoder_data = get_encoder_pos_of_motor();
+    float distance = driven_distance(encoder_data.left_motor, encoder_data.right_motor);
+    
+    if(mower_direction == M_BACKWARDS){
+      register_position_change(-distance);
+    }
+    else if(mower_direction == M_FORWARD){
+      register_position_change(distance);
+    }
+    else{
+      register_position_change(0);  //Standing still or turning is not regarded as a position change
+    }
+    
+    timestamp_last_sample = millis();
+  }
+}
+
+//Works like manual_coordinate_update() but without the delay.
+//Used to cover for the posibility of lost distance if user switches direction within the 0.25 second interval
+void immediate_coordinate_update(m_direction mower_direction){
+  Encoder_data encoder_data = get_encoder_pos_of_motor();
+  float distance = driven_distance(encoder_data.left_motor, encoder_data.right_motor);
+    
+  if(mower_direction == M_BACKWARDS){
+    register_position_change(-distance);
+  }
+  else if(mower_direction == M_FORWARD){
+    register_position_change(distance);
   }
 }
 
