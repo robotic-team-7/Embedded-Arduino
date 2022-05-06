@@ -96,10 +96,19 @@ float driven_distance(long pulses_left_motor, int pulses_right_motor);
 */
 void send_coordinates();
 
+/*
+*Immediatly calculates the new coordinates
+*/
 void calculate_new_coordinates();
 
+/*
+*Calculates the new coordinates is enough time has passed
+*/
 void calculate_new_coordinates_interval();
 
+/*
+*Sends last calculated coordinates if enough time has passed
+*/
 void send_latest_coordinates_interval();
 
 #endif
