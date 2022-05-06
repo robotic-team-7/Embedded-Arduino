@@ -63,6 +63,31 @@ float driven_distance(long pulses_left_motor, int pulses_right_motor){
   return (distance_left_motor + distance_right_motor) /2;
 }
 
+void calculate_new_coordinates(){
+  Encoder_data encoder_data = get_encoder_pos_of_motor();
+  float distance = driven_distance(encoder_data.left_motor, encoder_data.right_motor);
+  register_position_change(distance);
+}
+
+void calculate_new_coordinates_interval(){
+  static long calculate_interval_timer = 0;
+  if(millis() > calculate_interval_timer + 100){
+    Encoder_data encoder_data = get_encoder_pos_of_motor();
+    float distance = driven_distance(encoder_data.left_motor, encoder_data.right_motor);
+    register_position_change(distance);
+    
+    calculate_interval_timer = millis();
+  }
+}
+
+void send_latest_coordinates_interval(){
+  static long send_interval_timer = 0;
+  if(millis() > send_interval_timer + 500){
+    send_coordinates();
+    send_interval_timer = millis();
+  }
+}
+
 void send_coordinates(){
   Serial.print("(");
   Serial.print(current_position.x);
