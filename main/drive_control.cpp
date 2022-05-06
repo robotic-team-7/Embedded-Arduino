@@ -45,21 +45,20 @@ void reset_encoders(){
 
 void move(int direction, int speed)
 {
-  static int offset = 10;
   int left_speed = 0;
   int right_speed = 0;
   if (direction == 1) { //Move forward
     left_speed = -speed;
-    right_speed = speed+offset;
+    right_speed = speed;
   } else if (direction == 2) { //Move backwards
     left_speed = speed;
-    right_speed = -speed-offset;
+    right_speed = -speed;
   } else if (direction == 3) { //Turn left
     left_speed = -speed;
-    right_speed = -speed-offset;
+    right_speed = -speed;
   } else if (direction == 4) { //Turn right
     left_speed = speed;
-    right_speed = speed+offset;
+    right_speed = speed;
   }
   //Update motors speed
   Encoder_1.setTarPWM(left_speed);

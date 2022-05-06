@@ -52,8 +52,6 @@ void register_position_change(float distance){
   gyroscope->update();
   update_coordinates(distance, degrees_to_radians(gyroscope->getAngle(3)));
   reset_encoders();
-  
-  send_coordinates();
 }
 
 float driven_distance(long pulses_left_motor, int pulses_right_motor){

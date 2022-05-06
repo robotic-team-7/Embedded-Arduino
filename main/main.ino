@@ -65,6 +65,9 @@ void check_serial_input() {
       else if(buff[0] == 'M' && buff[1] == 'S'){
         set_manual_direction(M_NONE);
       }
+      else if(buff[0] == 'G' && buff[1] == 'C'){      //DEBUG PURPOSES
+        send_coordinates();
+      }
       else if(buff[1] == 'I' && buff[0] == 'S')
       {
         if(speed_manual != 100)
@@ -132,7 +135,8 @@ void auto_mode() {
 
 void manual_mode() {
   set_leds_yellow();
-  manual_coordinate_update();
+  calculate_new_coordinates_interval();
+  send_latest_coordinates_interval();
   
   switch(get_manual_direction()){
     case M_NONE:
@@ -145,24 +149,38 @@ void manual_mode() {
       move(2, speed_manual / 100.0 * 255);
       break;
     case M_LEFT:
-      move(3, 40 / 100.0 * 255);
+      move(3, 50 / 100.0 * 255);
       reset_encoders(); //Turning is done in place
       break;
     case M_RIGHT:
-      move(4, 40 / 100.0 * 255);
+      move(4, 50 / 100.0 * 255);
       reset_encoders();
       break;
   }
 }
 
-void manual_coordinate_update(){
-  //Sample coordinates and send every 0.5 seconds
-  if(millis() > timestamp_last_sample + 500){
+void calculate_new_coordinates_interval(){
+  static long calculate_interval_timer = 0;
+  if(millis() > calculate_interval_timer + 100){
     Encoder_data encoder_data = get_encoder_pos_of_motor();
     float distance = driven_distance(encoder_data.left_motor, encoder_data.right_motor);
     register_position_change(distance);
     
-    timestamp_last_sample = millis();
+    calculate_interval_timer = millis();
+  }
+}
+
+void calculate_new_coordinates(){
+  Encoder_data encoder_data = get_encoder_pos_of_motor();
+  float distance = driven_distance(encoder_data.left_motor, encoder_data.right_motor);
+  register_position_change(distance);
+}
+
+void send_latest_coordinates_interval(){
+  static long send_interval_timer = 0;
+  if(millis() > send_interval_timer + 500){
+    send_coordinates();
+    send_interval_timer = millis();
   }
 }
 
@@ -171,9 +189,8 @@ void line_follower_triggered() {
   set_encoders_tar_pwm(0, 0);
 
   _delay(1);  //Stop motors completely
-  Encoder_data encoder_data = get_encoder_pos_of_motor();
-  float distance = driven_distance(encoder_data.left_motor, encoder_data.right_motor);
-  register_position_change(distance);
+  calculate_new_coordinates();
+  send_latest_coordinates_interval();
 
   set_leds_red();
 
@@ -182,9 +199,8 @@ void line_follower_triggered() {
   _delay(0.5);
   move(2, 0);
   _delay(1);  //Let motors come to a complete stop
-  encoder_data = get_encoder_pos_of_motor();
-  distance = driven_distance(encoder_data.left_motor, encoder_data.right_motor);
-  register_position_change(-distance);
+  calculate_new_coordinates();
+  send_latest_coordinates_interval();
 
   //Choose left or right randomly and turn in  2 second 50% of speed
   int random_direction = rand() % 2 + 3;
@@ -199,9 +215,8 @@ void lidar_triggered() {
     //Set motor speed to 0 in 0.5 seconds
     set_encoders_tar_pwm(0, 0);
     _delay(1);  //Let wheels halt completely
-    Encoder_data encoder_data = get_encoder_pos_of_motor();
-    float distance = driven_distance(encoder_data.left_motor, encoder_data.right_motor);
-    register_position_change(distance);
+    calculate_new_coordinates();
+    send_latest_coordinates_interval();
   
     //Show red color on LED-ring
     set_leds_blue();
@@ -219,9 +234,8 @@ void lidar_triggered() {
     _delay(0.5);
     move(2, 0);
     _delay(1);  //To let wheels come to a complete halt
-    Encoder_data encoder_data = get_encoder_pos_of_motor();
-    float distance = driven_distance(encoder_data.left_motor, encoder_data.right_motor);
-    register_position_change(-distance);
+    calculate_new_coordinates();
+    send_latest_coordinates_interval();
   
     //Choose left or right randomly and turn in  1 second 50% of speed
     int random_direction = rand() % 2 + 3;
@@ -237,13 +251,8 @@ void auto_drive_forward() {
   //Show green color on LED-ring
   set_leds_green();
 
-  //Sample coordinates and send every 0.25 second
-  if(millis() > timestamp_last_sample + 250){
-    Encoder_data encoder_data = get_encoder_pos_of_motor();
-    float distance = driven_distance(encoder_data.left_motor, encoder_data.right_motor);
-    register_position_change(distance);
-    timestamp_last_sample = millis();
-  }
+  calculate_new_coordinates_interval();
+  send_latest_coordinates_interval();
 
   //Go forward, 50% of maximum speed
   move(1, 50 / 100.0 * 255);
