@@ -169,9 +169,9 @@ void line_follower_triggered() {
 
   set_leds_red();
 
-  //Go backwards in 0.5 seconds, 50% of maximum speed
+  //Go backwards in 1 second, 50% of maximum speed
   move(2, 50 / 100.0 * 255);
-  _delay(0.5);
+  _delay(1);
   move(2, 0);
   _delay(1);  //Let motors come to a complete stop
   calculate_new_coordinates();
