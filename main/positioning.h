@@ -21,14 +21,6 @@ typedef struct coordinate{
 void positioning_init(MeGyro* gyro0);
 
 /*
-*Used to get time passed since last timestamp
-*Suggestuin is to call this function when:
-*   Making a call to get_distance_traveled()
-*Returns number of milliseconds passed since given timestamp
-*/
-float get_time_passed(unsigned long timestamp_in_ms);
-
-/*
 * Updates current coordinate
 * Suggestion is to call this function when:
 *   Asked for coordinate

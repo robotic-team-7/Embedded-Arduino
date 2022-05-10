@@ -17,10 +17,6 @@ double degrees_to_radians(float angle_in_degrees){
   return (angle_in_degrees * M_PI) / 180;
 }
 
-float get_time_passed(unsigned long timestamp_in_ms){
-  return millis() - timestamp_in_ms;
-}
-
 void update_coordinates(float distance_traveled_cm, double angle_in_radians){
     current_position.x = current_position.x + distance_traveled_cm * cos(angle_in_radians);
     current_position.y = current_position.y + distance_traveled_cm * sin(angle_in_radians);
