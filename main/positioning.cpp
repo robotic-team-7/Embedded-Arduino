@@ -17,10 +17,6 @@ double degrees_to_radians(float angle_in_degrees){
   return (angle_in_degrees * M_PI) / 180;
 }
 
-float get_distance_traveled(float speed_cm_per_sec, float time_in_seconds){
-  return speed_cm_per_sec * time_in_seconds;
-}
-
 float get_time_passed(unsigned long timestamp_in_ms){
   return millis() - timestamp_in_ms;
 }

@@ -47,14 +47,6 @@ void update_coordinates(float distance_traveled_cm, double angle_in_radians);
 double degrees_to_radians(float angle_in_degrees);
 
 /*
-*Used to get a distance moved during some given duration
-*Suggestion is to call this function when:
-*   Making a call to update_coordinates() which takes a distance in cm
-*Returns distance traveled during given time duration in unit cm/sec
-*/
-float get_distance_traveled(float speed_cm_per_sec, float time_in_seconds);
-
-/*
 *Used to get the last calculated x-coordinate.
 *Returns a float value representing traveled distance on the x-axis in cm.
 */
