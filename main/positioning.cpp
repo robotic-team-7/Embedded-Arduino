@@ -13,12 +13,6 @@ void positioning_init(MeGyro* gyro0){
     current_position = {0, 0};
 }
 
-float get_current_speed(MeEncoderOnBoard* encoder){
-  float rotations_per_second = encoder->getCurrentSpeed() / SECONDS_IN_MINUTE;
-  float cm_per_second = 2 * M_PI * RADIUS * rotations_per_second;
-  return cm_per_second; 
-}
-
 double degrees_to_radians(float angle_in_degrees){
   return (angle_in_degrees * M_PI) / 180;
 }
