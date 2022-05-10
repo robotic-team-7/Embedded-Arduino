@@ -51,14 +51,6 @@ float get_coordinate_x();
 float get_coordinate_y();
 
 /*
-*Used to set timestamp which is used to calculate distance
-*Suggestion is to call this function every time robot starts
-*travel a new path or during a travel after registerPositionChange has been called.
-*Returns nothing.
-*/
-void set_timestamp();
-
-/*
 *Used to update coordinates. 
 *Suggestion is to call this function periodically or at a path change.
 *SetTimestamp should be called afterwards, when a new travel starts.

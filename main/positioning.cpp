@@ -30,10 +30,6 @@ float get_coordinate_y(){
   return current_position.y;
 }
 
-void setTimestamp(){
-  timestamp = millis();
-}
-
 void register_position_change(float distance){
   gyroscope->update();
   update_coordinates(distance, degrees_to_radians(gyroscope->getAngle(3)));
