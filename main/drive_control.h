@@ -9,7 +9,8 @@
 
 typedef enum {
   S_AUTO,
-  S_MANUAL
+  S_MANUAL,
+  S_TEST
 } s_modes;
 
 typedef enum {
