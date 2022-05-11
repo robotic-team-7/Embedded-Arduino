@@ -13,22 +13,12 @@ typedef struct coordinate{
     float y;
 }Coordinate;
 
-float get_current_speed(MeEncoderOnBoard* encoder);
-
 /*
 *Used to initiate positioning module
 *Takes a MeEncoderOnBoard reference
 *Returns nothing
 */
 void positioning_init(MeGyro* gyro0);
-
-/*
-*Used to get time passed since last timestamp
-*Suggestuin is to call this function when:
-*   Making a call to get_distance_traveled()
-*Returns number of milliseconds passed since given timestamp
-*/
-float get_time_passed(unsigned long timestamp_in_ms);
 
 /*
 * Updates current coordinate
@@ -49,14 +39,6 @@ void update_coordinates(float distance_traveled_cm, double angle_in_radians);
 double degrees_to_radians(float angle_in_degrees);
 
 /*
-*Used to get a distance moved during some given duration
-*Suggestion is to call this function when:
-*   Making a call to update_coordinates() which takes a distance in cm
-*Returns distance traveled during given time duration in unit cm/sec
-*/
-float get_distance_traveled(float speed_cm_per_sec, float time_in_seconds);
-
-/*
 *Used to get the last calculated x-coordinate.
 *Returns a float value representing traveled distance on the x-axis in cm.
 */
@@ -67,14 +49,6 @@ float get_coordinate_x();
 *Returns a float value representing traveled distance on the y-axis in cm.
 */
 float get_coordinate_y();
-
-/*
-*Used to set timestamp which is used to calculate distance
-*Suggestion is to call this function every time robot starts
-*travel a new path or during a travel after registerPositionChange has been called.
-*Returns nothing.
-*/
-void set_timestamp();
 
 /*
 *Used to update coordinates. 

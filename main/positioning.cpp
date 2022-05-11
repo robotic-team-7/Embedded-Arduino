@@ -13,22 +13,8 @@ void positioning_init(MeGyro* gyro0){
     current_position = {0, 0};
 }
 
-float get_current_speed(MeEncoderOnBoard* encoder){
-  float rotations_per_second = encoder->getCurrentSpeed() / SECONDS_IN_MINUTE;
-  float cm_per_second = 2 * M_PI * RADIUS * rotations_per_second;
-  return cm_per_second; 
-}
-
 double degrees_to_radians(float angle_in_degrees){
   return (angle_in_degrees * M_PI) / 180;
-}
-
-float get_distance_traveled(float speed_cm_per_sec, float time_in_seconds){
-  return speed_cm_per_sec * time_in_seconds;
-}
-
-float get_time_passed(unsigned long timestamp_in_ms){
-  return millis() - timestamp_in_ms;
 }
 
 void update_coordinates(float distance_traveled_cm, double angle_in_radians){
@@ -42,10 +28,6 @@ float get_coordinate_x(){
 
 float get_coordinate_y(){
   return current_position.y;
-}
-
-void setTimestamp(){
-  timestamp = millis();
 }
 
 void register_position_change(float distance){
