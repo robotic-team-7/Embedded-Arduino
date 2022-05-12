@@ -146,7 +146,7 @@ void manual_mode() {
   set_leds_yellow();
   calculate_new_coordinates_interval();
 
-  if(get_drive_mode() != S_TEST){
+  if(get_drive_mode() != S_TEST && get_drive_mode() != S_WAITING){
     send_latest_coordinates_interval();
   }
   
@@ -240,8 +240,9 @@ void auto_drive_forward() {
   set_leds_green();
 
   calculate_new_coordinates_interval();
-  send_latest_coordinates_interval();
-
+  if(get_drive_mode() != S_TEST && get_drive_mode() != S_WAITING){
+    send_latest_coordinates_interval();
+  }
   //Go forward, 50% of maximum speed
   move(1, 50 / 100.0 * 255);
 }

@@ -7,7 +7,7 @@ s_modes mode;
 
 void drive_control_init(){
     manual_direction = M_NONE;
-    mode = S_AUTO;
+    mode = S_WAITING;
     attachInterrupt(Encoder_1.getIntNum(), isr_process_encoder1, RISING);
     attachInterrupt(Encoder_2.getIntNum(), isr_process_encoder2, RISING);
 }
