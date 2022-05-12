@@ -70,6 +70,12 @@ void send_latest_coordinates_interval(){
   }
 }
 
+void rotate_point_90_degrees(int* point){
+  int tmp_point[] = {*point, *(point+1)};
+  *point = -tmp_point[1];
+  *(point+1) = tmp_point[0];
+}
+
 void send_coordinates(){
   Serial.print("(");
   Serial.print(current_position.x);
