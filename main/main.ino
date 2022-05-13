@@ -50,6 +50,8 @@ void check_serial_input() {
       set_drive_mode(S_AUTO);
     }
     else if (buff[0] == 'M' && buff[1] == 'M' && get_drive_mode() != S_MANUAL) {
+      set_manual_direction(M_NONE);
+      speed_manual = 50;
       set_drive_mode(S_MANUAL);
     }
     else if(buff[0] == 'T' && buff[1] == 'M'){
@@ -90,9 +92,6 @@ void check_serial_input() {
     }
     else if(lidar_triggered_states == LTS_WAITING_ON_PIC_TAKEN && buff[0] == 'P' && buff[1] == 'T'){
       lidar_triggered_states = LTS_TURNING_AWAY_FROM_OBSTACLE;
-    }
-    else{
-      Serial.print("UC");
     }
   }
 }

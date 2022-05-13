@@ -64,7 +64,7 @@ void calculate_new_coordinates_interval(){
 
 void send_latest_coordinates_interval(){
   static long send_interval_timer = 0;
-  if(millis() > send_interval_timer + 500){
+  if(millis() > send_interval_timer + 625){
     send_coordinates();
     send_interval_timer = millis();
   }
@@ -77,10 +77,10 @@ void rotate_point_90_degrees(int* point){
 }
 
 void send_coordinates(){
-  Serial.print("(");
+  //Serial.print("(");
   Serial.print(current_position.x);
   Serial.print(",");
   Serial.print(current_position.y);
-  Serial.print(")");
+  //Serial.print(")");
   Serial.print("\n");
 }
