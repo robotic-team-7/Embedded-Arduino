@@ -50,6 +50,8 @@ void check_serial_input() {
       set_drive_mode(S_AUTO);
     }
     else if (buff[0] == 'M' && buff[1] == 'M' && get_drive_mode() != S_MANUAL) {
+      set_manual_direction(M_NONE);
+      speed_manual = 50;
       set_drive_mode(S_MANUAL);
     }
     else if(buff[0] == 'T' && buff[1] == 'M'){
@@ -93,9 +95,6 @@ void check_serial_input() {
     }
     else if(lidar_triggered_states == LTS_WAITING_ON_PIC_TAKEN && buff[0] == 'P' && buff[1] == 'T'){
       lidar_triggered_states = LTS_TURNING_AWAY_FROM_OBSTACLE;
-    }
-    else{
-      Serial.print("UC");
     }
   }
 }
@@ -149,7 +148,7 @@ void manual_mode() {
   set_leds_yellow();
   calculate_new_coordinates_interval();
 
-  if(get_drive_mode() != S_TEST){
+  if(get_drive_mode() != S_TEST && get_drive_mode() != S_WAITING){
     send_latest_coordinates_interval();
   }
   
@@ -243,8 +242,9 @@ void auto_drive_forward() {
   set_leds_green();
 
   calculate_new_coordinates_interval();
-  send_latest_coordinates_interval();
-
+  if(get_drive_mode() != S_TEST && get_drive_mode() != S_WAITING){
+    send_latest_coordinates_interval();
+  }
   //Go forward, 50% of maximum speed
   move(1, 50 / 100.0 * 255);
 }
