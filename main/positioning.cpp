@@ -32,7 +32,8 @@ float get_coordinate_y(){
 
 void register_position_change(float distance){
   gyroscope->update();
-  update_coordinates(distance, degrees_to_radians(gyroscope->getAngle(3)));
+  update_coordinates(distance, degrees_to_radians(-gyroscope->getAngle(3)) + M_PI/2);
+  
   reset_encoders();
 }
 
@@ -68,12 +69,6 @@ void send_latest_coordinates_interval(){
     send_coordinates();
     send_interval_timer = millis();
   }
-}
-
-void rotate_point_90_degrees(int* point){
-  int tmp_point[] = {*point, *(point+1)};
-  *point = -tmp_point[1];
-  *(point+1) = tmp_point[0];
 }
 
 void send_coordinates(){

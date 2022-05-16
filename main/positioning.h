@@ -85,10 +85,4 @@ void calculate_new_coordinates_interval();
 */
 void send_latest_coordinates_interval();
 
-/*
-*Rotates an integer vector representing a point by 90 degrees counter clockwise
-*Takes a pointer to an array and changes the input array
-*/
-void rotate_point_90_degrees(int* point);
-
 #endif
