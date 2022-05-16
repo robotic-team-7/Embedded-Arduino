@@ -74,15 +74,18 @@ void check_serial_input() {
       else if(buff[0] == 'G' && buff[1] == 'C'){      //DEBUG PURPOSES
         send_coordinates();
       }
-      else if(buff[1] == 'I' && buff[0] == 'S')
+      else if(buff[0] == 'S' && buff[1] == 'I')
       {
-        if(speed_manual != 100)
+        if(speed_manual != 100){
           speed_manual += 25;
+        }
+
       }
-      else if(buff[1] == 'D' && buff[0] == 'S')
+      else if(buff[0] == 'S' && buff[1] == 'D')
       {
-        if(speed_manual != 25)
+        if(speed_manual != 25){
           speed_manual -= 25;
+        }
       }
     }
     else if(buff[0] == 'L' && buff[1] == 'T'){ //When in Auto mode, LIDAR triggered command from Raspberry
@@ -464,6 +467,57 @@ void test_mode(){
       }
     }
   }
+
+  //Test check_serial_input
+  //AM
+  Serial.print("Test check_serial_input, send AM");
+  while(Serial.available() < 2 ){
+    continue;
+  }
+  check_serial_input();
+  if(get_drive_mode() == S_AUTO){
+    Serial.println(": OK");
+  }
+  else{
+    Serial.println(": ERROR");
+    Serial.println("- COMMENT: Either wrong command sent or robot entered wrong mode");
+    Serial.println("  - Currently in mode: ");
+    Serial.println(get_drive_mode());
+  }
+
+  //LT
+  Serial.print("Test check_serial_input, send LT");
+  while(Serial.available() < 2 ){
+    continue;
+  }
+  check_serial_input();
+  if(lidar_triggered_states == LTS_STOPPING_ROBOT){
+    Serial.println(": OK");
+  }
+  else{
+    Serial.println(": ERROR");
+    Serial.println("- COMMENT: Either wrong command sent or robot entered lidar state");
+    Serial.println("  - Currently in lidar state: ");
+    Serial.println(lidar_triggered_states);
+  }
+  lidar_triggered_states = LTS_WAITING_ON_PIC_TAKEN;
+
+  //PT
+  Serial.print("Test check_serial_input, send PT");
+  while(Serial.available() < 2 ){
+    continue;
+  }
+  check_serial_input();
+  if(lidar_triggered_states == LTS_TURNING_AWAY_FROM_OBSTACLE){
+    Serial.println(": OK");
+  }
+  else{
+    Serial.println(": ERROR");
+    Serial.println("- COMMENT: Either wrong command sent or robot entered lidar state");
+    Serial.println("  - Currently in lidar state: ");
+    Serial.println(lidar_triggered_states);
+  }
+  lidar_triggered_states = LTS_NOT_TRIGGERED;
   
   Serial.println("### TESTING ENDED ###");
 }
