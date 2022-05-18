@@ -1,8 +1,5 @@
 #include "positioning.h"
 
-#define RADIUS 16.0
-#define SECONDS_IN_MINUTE 60.0
-
 Coordinate current_position;
 MeGyro* gyroscope;
 
