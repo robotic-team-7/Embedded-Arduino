@@ -1,8 +1,12 @@
-#ifndef POSITIONING.H
-#define POSITIONING.H
+#ifndef POSITIONING
+#define POSITIONING
 
 #include <MeEncoderOnBoard.h>
+#include <MeGyro.h>
 #include <math.h>
+#include "drive_control.h"
+
+
 
 typedef struct coordinate{
     float x;
@@ -14,29 +18,7 @@ typedef struct coordinate{
 *Takes a MeEncoderOnBoard reference
 *Returns nothing
 */
-void init(MeEncoderOnBoard* encoder);
-
-/*
-*Gets the current speed in cm per second
-*Suggestion is to call this function when:
-*   Mower starts moving forward
-*   Mower is reversing
-*   Mower stops
-*   
-*   Can be used as a parameter for get_distance_traveled()
-*NOTE!
-*Getting the current speed is based on the right wheel
-*Returns speed in units of cm/sec
-*/
-float get_current_speed_cm_per_second();
-
-/*
-*Used to get time passed since last timestamp
-*Suggestuin is to call this function when:
-*   Making a call to get_distance_traveled()
-*Returns number of milliseconds passed since given timestamp
-*/
-float get_time_passed(unsigned long timestamp_in_ms);
+void positioning_init(MeGyro* gyro0);
 
 /*
 * Updates current coordinate
@@ -57,11 +39,50 @@ void update_coordinates(float distance_traveled_cm, double angle_in_radians);
 double degrees_to_radians(float angle_in_degrees);
 
 /*
-*Used to get a distance moved during some given duration
-*Suggestion is to call this function when:
-*   Making a call to update_coordinates() which takes a distance in cm
-*Returns distance traveled during given time duration in unit cm/sec
+*Used to get the last calculated x-coordinate.
+*Returns a float value representing traveled distance on the x-axis in cm.
 */
-float get_distance_traveled(float speed_cm_per_sec, float time_in_seconds);
+float get_coordinate_x();
+
+/*
+*Used to get the last calculated y-coordinate.
+*Returns a float value representing traveled distance on the y-axis in cm.
+*/
+float get_coordinate_y();
+
+/*
+*Used to update coordinates. 
+*Suggestion is to call this function periodically or at a path change.
+*SetTimestamp should be called afterwards, when a new travel starts.
+*Returns nothing.
+*/
+void register_position_change(float encoder_data);
+
+/*
+*Used to calculate distance traveled through encoder pulses. 
+*Returns a float representing distance traveled in cm.
+*/
+float driven_distance(long pulses_left_motor, int pulses_right_motor);
+
+/*
+*Sends the latest sampled coordinates.
+*Returns nothing.
+*/
+void send_coordinates();
+
+/*
+*Immediatly calculates the new coordinates
+*/
+void calculate_new_coordinates();
+
+/*
+*Calculates the new coordinates is enough time has passed
+*/
+void calculate_new_coordinates_interval();
+
+/*
+*Sends last calculated coordinates if enough time has passed
+*/
+void send_latest_coordinates_interval();
 
 #endif
